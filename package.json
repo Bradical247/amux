@@ -1,0 +1,32 @@
+{
+  "name": "amux",
+  "version": "0.2.0",
+  "description": "Linux-native, tmux-backed orchestrator for parallel AI coding agents in isolated git worktrees.",
+  "type": "module",
+  "bin": {
+    "amux": "dist/amux"
+  },
+  "scripts": {
+    "dev": "bun src/cli.ts",
+    "build": "bun build src/cli.ts --compile --outfile dist/amux",
+    "start": "./dist/amux",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src package.json biome.json",
+    "lint:fix": "biome check --write src package.json biome.json",
+    "format": "biome format --write src",
+    "test": "bun test",
+    "check": "bun run typecheck && bun run lint && bun test"
+  },
+  "engines": {
+    "bun": ">=1.1"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.0",
+    "@types/bun": "^1.1.0",
+    "typescript": "^5.5.4"
+  }
+}
