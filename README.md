@@ -12,6 +12,26 @@ attach to from anywhere**.
 > amux trades the native GUI for the thing macOS terminals can't give you:
 > the server room.
 
+## Features
+
+- 🧬 **Parallel agents, fully isolated** — each agent runs in its own git worktree
+  (its own branch, no file collisions) and its own tmux session.
+- 🛰️ **Headless & remote-first** — tmux-backed, so it runs over SSH on a server, the
+  agents survive disconnects, and you reattach from anywhere. (cmux is desktop-only.)
+- 📊 **Three ways to watch** — `amux ls` table, a live full-screen **TUI** (`amux dash`),
+  and a remote-reachable **web dashboard** with live SSE updates (`amux web`).
+- ⚠️ **Conflict detection** — surfaces files touched by more than one agent *before*
+  you merge, in the CLI and both dashboards.
+- 🔀 **Merge / PR orchestration** — `amux merge` lands a branch (clean-aborts on
+  conflict); `amux pr` pushes and opens a GitHub PR.
+- 📣 **Broadcast** — `amux broadcast` types the same prompt into many agents at once.
+- 🔔 **Status notifications** — agents report `waiting`/`done`/`error` via `amux notify`
+  (wire it into agent hooks); a daemon pushes live events to every client.
+- 🔒 **Authenticated when exposed** — the web dashboard auto-mints a token the moment
+  it binds beyond loopback.
+- 📦 **Single-binary distribution** — `bun build --compile` produces one self-contained
+  executable; the target machine needs nothing installed.
+
 ## Why tmux as the base
 
 tmux already solves the hard parts — PTYs, sessions, panes, and **persistence
@@ -27,8 +47,9 @@ adds the agent-specific concerns on top:
 
 ## Status
 
-**v0.2.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
-`dash` (live TUI), `web` (dashboard + SSE), `daemon`, `watch`.
+**v0.3.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
+`broadcast`, `merge`, `pr`, `dash` (live TUI), `web` (dashboard + SSE + auth),
+`daemon`, `watch`.
 
 ## Commands
 
