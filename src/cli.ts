@@ -2,6 +2,7 @@
 // Thin CLI frontend. All real work lives in core/manager. Normal commands run
 // in-process (no daemon needed); `daemon` starts the control plane and `watch`
 // streams live events from it.
+import { spawn, spawnSync } from "node:child_process";
 import { Command } from "commander";
 import * as mgr from "./core/manager";
 import { attach } from "./core/tmux";
@@ -13,7 +14,7 @@ const program = new Command();
 program
   .name("amux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
-  .version("0.4.0");
+  .version("0.5.0");
 
 function fail(msg: string): never {
   console.error(`amux: ${msg}`);
@@ -26,6 +27,26 @@ async function guard<T>(fn: () => Promise<T>): Promise<T> {
   } catch (e) {
     return fail((e as Error).message);
   }
+}
+
+/** First installed Chromium-family browser that supports `--app` window mode. */
+function findBrowser(): string | null {
+  const candidates = [
+    "chromium",
+    "chromium-browser",
+    "google-chrome",
+    "google-chrome-stable",
+    "brave-browser",
+    "microsoft-edge",
+  ];
+  for (const c of candidates) {
+    try {
+      if (spawnSync(c, ["--version"], { stdio: "ignore" }).status === 0) return c;
+    } catch {
+      /* not installed */
+    }
+  }
+  return null;
 }
 
 program
@@ -200,6 +221,30 @@ program
       const q = token ? `?token=${token}` : "";
       console.log(`amux web → http://${opts.host}:${port}/${q}`);
       if (token) console.log(`  auth token: ${token}`);
+    }),
+  );
+
+program
+  .command("gui")
+  .description("open the dashboard as a desktop app window (cmux-style)")
+  .option("-p, --port <port>", "port", "7878")
+  .action((opts) =>
+    guard(async () => {
+      const { startWeb } = await import("./web/server");
+      const port = Number(opts.port);
+      await startWeb(port, "127.0.0.1");
+      const url = `http://127.0.0.1:${port}/`;
+      const browser = findBrowser();
+      if (browser) {
+        spawn(browser, [`--app=${url}`, "--new-window"], {
+          detached: true,
+          stdio: "ignore",
+        }).unref();
+        console.log(`amux gui → ${url}  (app window via ${browser})`);
+      } else {
+        console.log(`amux gui → open ${url}  (no Chromium/Chrome found for app mode)`);
+      }
+      console.log("  embedded terminals require ttyd on PATH");
     }),
   );
 

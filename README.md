@@ -13,6 +13,8 @@
 
 <p align="center"><img src="assets/demo.gif" alt="amux demo" width="820" /></p>
 
+<p align="center"><img src="assets/gui.png" alt="amux GUI" width="820" /><br/><sub>the <code>amux gui</code> desktop window — sidebar workspaces + embedded live terminals</sub></p>
+
 Run many coding agents (Claude Code, Codex, Gemini, Aider, …) at once — each in
 its own isolated git worktree and tmux session — and manage them all from one
 place. Unlike desktop-GUI orchestrators, amux is built on tmux, so it runs
@@ -25,12 +27,15 @@ attach to from anywhere**.
 
 ## Features
 
+- 🖥️ **Desktop GUI** — `amux gui` opens a cmux-style app window: a sidebar of agent
+  workspaces (status + notification rings) and an **embedded live terminal** per
+  agent (via [ttyd](https://github.com/tsl0922/ttyd)), with merge / PR / broadcast / kill in the toolbar.
 - 🧬 **Parallel agents, fully isolated** — each agent runs in its own git worktree
   (its own branch, no file collisions) and its own tmux session.
 - 🛰️ **Headless & remote-first** — tmux-backed, so it runs over SSH on a server, the
   agents survive disconnects, and you reattach from anywhere. (cmux is desktop-only.)
-- 📊 **Three ways to watch** — `amux ls` table, a live full-screen **TUI** (`amux dash`),
-  and a remote-reachable **web dashboard** with live SSE updates (`amux web`).
+- 📊 **Many ways to watch** — `amux ls` table, a live **TUI** (`amux dash`), a tiled
+  terminal view (`amux grid`), and a remote-reachable **web dashboard** (`amux web`).
 - ⚠️ **Conflict detection** — surfaces files touched by more than one agent *before*
   you merge, in the CLI and both dashboards.
 - 🔀 **Merge / PR orchestration** — `amux merge` lands a branch (clean-aborts on
@@ -58,9 +63,10 @@ adds the agent-specific concerns on top:
 
 ## Status
 
-**v0.4.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
+**v0.5.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
 `broadcast`, `merge`, `pr`, `dash` (live TUI), `grid` (tiled live view), `web`
-(dashboard + SSE + auth + create form), `daemon`, `watch`.
+(dashboard + SSE + auth + create form), `gui` (cmux-style desktop window),
+`daemon`, `watch`.
 
 ## Commands
 
@@ -77,6 +83,7 @@ amux pr <name> [-t title] [--draft]  # push branch + open a GitHub PR (needs gh)
 amux dash                            # live full-screen TUI (status table)
 amux grid                            # tiled, read-only live view of all agents
 amux web [--port 7878] [--host 0.0.0.0] [--token t]   # web dashboard, SSE live updates
+amux gui [--port 7878]               # cmux-style desktop app window (needs ttyd + a browser)
 amux daemon                          # control-plane daemon (event push, remote API)
 amux watch                           # stream live status from the daemon
 amux agents

@@ -5,6 +5,7 @@
 import { randomUUID } from "node:crypto";
 import http from "node:http";
 import * as mgr from "../core/manager";
+import { ensureTerminal, stopAllTerminals, stopTerminal } from "../core/terminals";
 import type { NewAgentOpts, Status } from "../core/types";
 import { Watcher } from "../core/watcher";
 import { PAGE } from "./page";
@@ -78,6 +79,12 @@ export async function startWeb(
       if (req.method === "GET" && path === "/api/agent-keys")
         return json(res, await mgr.agentKeys());
 
+      // Embedded terminal: ensure a ttyd is serving this agent, return its port.
+      if (req.method === "GET" && path.startsWith("/api/term/")) {
+        const name = decodeURIComponent(path.slice("/api/term/".length));
+        return json(res, { port: await ensureTerminal(name) });
+      }
+
       if (req.method === "GET" && path === "/api/events") {
         res.writeHead(200, {
           "content-type": "text/event-stream",
@@ -98,6 +105,7 @@ export async function startWeb(
       }
       if (req.method === "POST" && path === "/api/kill") {
         const b = await readBody(req);
+        stopTerminal(b.name as string);
         await mgr.kill(b.name as string, Boolean(b.rmWorktree));
         await pushSnapshot();
         return json(res, { ok: true });
@@ -108,6 +116,19 @@ export async function startWeb(
         await pushSnapshot();
         return json(res, { ok: true });
       }
+      if (req.method === "POST" && path === "/api/broadcast") {
+        const b = await readBody(req);
+        const names = Array.isArray(b.names) ? (b.names as string[]) : [];
+        return json(res, { sent: await mgr.broadcast(names, (b.text as string) ?? "") });
+      }
+      if (req.method === "POST" && path === "/api/merge") {
+        const b = await readBody(req);
+        return json(res, await mgr.merge(b.name as string, { into: b.into as string | undefined }));
+      }
+      if (req.method === "POST" && path === "/api/pr") {
+        const b = await readBody(req);
+        return json(res, { url: await mgr.openPr(b.name as string, { title: b.title as string }) });
+      }
 
       res.writeHead(404, { "content-type": "text/plain" });
       res.end("not found");
@@ -116,7 +137,10 @@ export async function startWeb(
     }
   });
 
-  server.on("close", () => watcher.stop());
+  server.on("close", () => {
+    watcher.stop();
+    stopAllTerminals();
+  });
   await new Promise<void>((resolve) => server.listen(port, host, resolve));
   return { server, token: authToken };
 }

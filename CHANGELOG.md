@@ -3,6 +3,18 @@
 All notable changes to amux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [0.5.0]
+
+### Added
+- **`amux gui`** — a cmux-style desktop app window: opens the dashboard chromeless
+  (Chromium `--app`). New cmux-style layout: a sidebar of agent workspaces with
+  status/notification rings + an **embedded live terminal** per agent (a `ttyd`
+  serving `tmux attach`), and a toolbar (broadcast / merge / PR / kill).
+- Web API: `GET /api/term/:name` (spawns a per-agent ttyd, returns its port),
+  `POST /api/broadcast`, `POST /api/merge`, `POST /api/pr`.
+- `core/terminals.ts` — on-demand ttyd lifecycle (loopback-bound, torn down on
+  kill / server stop).
+
 ## [0.4.0]
 
 ### Added
