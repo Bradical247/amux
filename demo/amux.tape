@@ -9,7 +9,7 @@ Set FontSize 18
 Set Width 1200
 Set Height 720
 Set Padding 24
-Set Theme "Github Dark"
+Set Theme "GitHub Dark"
 Set TypingSpeed 60ms
 
 # A throwaway repo so the demo is self-contained.

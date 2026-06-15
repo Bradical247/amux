@@ -11,9 +11,7 @@
 
 </div>
 
-<!-- Demo GIF — render with `vhs demo/amux.tape`, then uncomment:
-<p align="center"><img src="assets/demo.gif" alt="amux demo" width="760" /></p>
--->
+<p align="center"><img src="assets/demo.gif" alt="amux demo" width="820" /></p>
 
 Run many coding agents (Claude Code, Codex, Gemini, Aider, …) at once — each in
 its own isolated git worktree and tmux session — and manage them all from one
