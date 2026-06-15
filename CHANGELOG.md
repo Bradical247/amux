@@ -3,6 +3,16 @@
 All notable changes to amux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [0.4.0]
+
+### Added
+- `amux grid` — attach to a tiled, read-only live view of all agents. Each pane
+  runs a `capture-pane` mirror loop (refreshes 1s), so the grid builds detached
+  and renders correctly once attached.
+- Web dashboard **create-agent form** — name + adapter (from `/api/agent-keys`) +
+  repo path, POSTed to `/api/new`.
+- Conflict count surfaced in the TUI header and the web header (not just the list).
+
 ## [0.3.0]
 
 ### Added

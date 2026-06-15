@@ -47,9 +47,9 @@ adds the agent-specific concerns on top:
 
 ## Status
 
-**v0.3.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
-`broadcast`, `merge`, `pr`, `dash` (live TUI), `web` (dashboard + SSE + auth),
-`daemon`, `watch`.
+**v0.4.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
+`broadcast`, `merge`, `pr`, `dash` (live TUI), `grid` (tiled live view), `web`
+(dashboard + SSE + auth + create form), `daemon`, `watch`.
 
 ## Commands
 
@@ -63,7 +63,8 @@ amux conflicts                       # files touched by >1 agent (merge collisio
 amux broadcast [names...] -m "..."   # type a prompt into agents' sessions (all if no names)
 amux merge <name> [--into b] [--ff]  # merge an agent's branch into the base branch
 amux pr <name> [-t title] [--draft]  # push branch + open a GitHub PR (needs gh)
-amux dash                            # live full-screen TUI
+amux dash                            # live full-screen TUI (status table)
+amux grid                            # tiled, read-only live view of all agents
 amux web [--port 7878] [--host 0.0.0.0] [--token t]   # web dashboard, SSE live updates
 amux daemon                          # control-plane daemon (event push, remote API)
 amux watch                           # stream live status from the daemon
@@ -137,8 +138,8 @@ State lives in `~/.amux/state.json`; worktrees in `~/.amux/worktrees/<repo>/<nam
 - [x] **`amux broadcast`** — send the same instruction to N agents at once.
 - [x] **Web auth** — token required (auto-minted) whenever the dashboard binds beyond loopback.
 - [x] **Single-binary distribution** — `bun build --compile` ships a self-contained executable.
-- [ ] **TUI: tiled live agent panes** (currently a status table + attach).
-- [ ] **Web: create-agent form** in the dashboard UI.
+- [x] **TUI: tiled live agent panes** — `amux grid` mirrors every live agent in a tiled, read-only view.
+- [x] **Web: create-agent form** — spawn agents from the dashboard.
 - [ ] **Go rewrite** — only if Bun's single-binary story proves insufficient.
 
 ## Architecture

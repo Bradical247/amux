@@ -42,6 +42,13 @@ export const PAGE = /* html */ `<!doctype html>
       padding:8px 12px;margin-bottom:8px;font-size:13px}
   .cf .who{color:var(--mut);font-size:12px}
   .empty{color:var(--mut);padding:40px;text-align:center}
+  .cflag{color:var(--red);font-weight:700}
+  #newbtn{margin-left:auto}
+  form.newform{display:none;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  form.newform.open{display:flex}
+  input,select{background:#010409;color:var(--fg);border:1px solid var(--bd);
+       border-radius:6px;padding:6px 8px;font:inherit;font-size:13px}
+  .ferr{color:var(--red);font-size:12px}
 </style>
 </head>
 <body>
@@ -49,8 +56,17 @@ export const PAGE = /* html */ `<!doctype html>
   <span class="dot" id="live"></span>
   <h1>amux</h1>
   <span id="count" style="color:var(--mut)"></span>
+  <span id="cflag" class="cflag"></span>
+  <button id="newbtn">+ new agent</button>
 </header>
 <main>
+  <form class="newform" id="newform">
+    <input id="f_name" placeholder="name" autocomplete="off" required />
+    <select id="f_agent"></select>
+    <input id="f_repo" placeholder="repo path" value="." />
+    <button type="submit">create</button>
+    <span class="ferr" id="f_err"></span>
+  </form>
   <div class="grid" id="grid"></div>
   <div class="conflicts" id="cwrap" style="display:none">
     <h2>⚠ merge conflicts</h2>
@@ -88,6 +104,7 @@ function render(){
 async function loadConflicts(){
   const cs=await (await api('/api/conflicts')).json();
   conflicted=new Set(cs.flatMap(c=>c.agents));
+  document.getElementById('cflag').textContent=cs.length?('⚠ '+cs.length+' conflict'+(cs.length>1?'s':'')):'';
   const wrap=document.getElementById('cwrap');
   wrap.style.display=cs.length?'block':'none';
   document.getElementById('conflicts').innerHTML=cs.map(c=>
@@ -98,7 +115,31 @@ async function kill(name,rm){
   await api('/api/kill',{method:'POST',headers:{'content-type':'application/json'},
     body:JSON.stringify({name,rmWorktree:rm})});
 }
+async function loadAgentKeys(){
+  const keys=await (await api('/api/agent-keys')).json();
+  document.getElementById('f_agent').innerHTML=keys.map(k=>\`<option>\${esc(k)}</option>\`).join('');
+}
+function wireForm(){
+  const form=document.getElementById('newform');
+  document.getElementById('newbtn').onclick=()=>{
+    form.classList.toggle('open');
+    if(form.classList.contains('open'))document.getElementById('f_name').focus();
+  };
+  form.onsubmit=async ev=>{
+    ev.preventDefault();
+    document.getElementById('f_err').textContent='';
+    const body={name:document.getElementById('f_name').value.trim(),
+      agent:document.getElementById('f_agent').value,
+      repo:document.getElementById('f_repo').value.trim()||'.'};
+    const r=await api('/api/new',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(r.ok){form.classList.remove('open');document.getElementById('f_name').value='';}
+    else document.getElementById('f_err').textContent=j.error||'failed';
+  };
+}
 async function boot(){
+  await loadAgentKeys();
+  wireForm();
   agents=await (await api('/api/agents')).json();
   await loadConflicts();
   const ev=new EventSource('/api/events'+Q);

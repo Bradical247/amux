@@ -37,6 +37,27 @@ export async function sendKeys(session: string, text: string): Promise<void> {
   await pexec("tmux", ["send-keys", "-t", session, text, "Enter"]);
 }
 
+/**
+ * Build a detached "grid" session: one tiled, read-only pane per given session.
+ * Each pane runs a loop that mirrors the agent's output via `capture-pane`,
+ * refreshing once a second. (Nested `tmux attach` dies when built detached; a
+ * capture loop stays alive and renders correctly once a client attaches.)
+ * Rebuilt from scratch each call; the caller attaches to it separately.
+ */
+export async function buildGrid(grid: string, sessions: string[]): Promise<void> {
+  await killSession(grid);
+  const first = sessions[0];
+  if (!first) return;
+  const mirror = (s: string) =>
+    `while tmux has-session -t ${s} 2>/dev/null; do clear; printf '── %s ──\\n' ${s}; tmux capture-pane -ept ${s}; sleep 1; done`;
+  await pexec("tmux", ["new-session", "-d", "-s", grid, mirror(first)]);
+  for (const s of sessions.slice(1)) {
+    await pexec("tmux", ["split-window", "-t", grid, mirror(s)]);
+    await pexec("tmux", ["select-layout", "-t", grid, "tiled"]);
+  }
+  await pexec("tmux", ["select-layout", "-t", grid, "tiled"]);
+}
+
 export async function listSessionNames(): Promise<string[]> {
   try {
     const { stdout } = await pexec("tmux", ["list-sessions", "-F", "#{session_name}"]);

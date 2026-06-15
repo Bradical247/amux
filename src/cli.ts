@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name("amux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
-  .version("0.3.0");
+  .version("0.4.0");
 
 function fail(msg: string): never {
   console.error(`amux: ${msg}`);
@@ -169,6 +169,20 @@ program
     guard(async () => {
       const { runDash } = await import("./tui/dash");
       await runDash();
+    }),
+  );
+
+program
+  .command("grid")
+  .description("attach to a tiled, read-only view of all live agents")
+  .action(() =>
+    guard(async () => {
+      const n = await mgr.grid();
+      if (n === 0) {
+        console.log("no live agents to tile");
+        return;
+      }
+      attach(mgr.GRID_SESSION);
     }),
   );
 

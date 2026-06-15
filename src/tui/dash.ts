@@ -39,7 +39,8 @@ export async function runDash(): Promise<void> {
   function render(): void {
     clear();
     const W = process.stdout.columns ?? 80;
-    out(`${ESC}1m amux${ESC}0m  ${agents.length} agents${" ".repeat(Math.max(0, 20))}\n`);
+    const cflag = conflicts.length ? `  ${ESC}31m${conflicts.length}⚠${ESC}0m` : "";
+    out(`${ESC}1m amux${ESC}0m  ${agents.length} agents${cflag}\n`);
     out(`${"─".repeat(W)}\n`);
 
     if (agents.length === 0) {

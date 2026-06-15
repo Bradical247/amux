@@ -15,7 +15,7 @@ import {
   repoRoot,
 } from "./git";
 import * as store from "./store";
-import { killSession, newSession, sendKeys, sessionExists } from "./tmux";
+import { buildGrid, killSession, newSession, sendKeys, sessionExists } from "./tmux";
 import type { Agent, AgentView, Conflict, NewAgentOpts } from "./types";
 
 export class AmuxError extends Error {}
@@ -167,4 +167,17 @@ export async function merge(name: string, opts: MergeOpts = {}): Promise<MergeRe
   if (!a) throw new AmuxError(`unknown agent '${name}'`);
   const into = opts.into ?? (await defaultBranch(a.repo));
   return mergeInto(a.repo, a.branch, into, opts.noFf ?? true);
+}
+
+export const GRID_SESSION = "amux-grid";
+
+/** Build a tiled, read-only tmux view of all live agents; returns the live count. */
+export async function grid(): Promise<number> {
+  const agents = await store.getAll();
+  const live: string[] = [];
+  for (const a of agents) {
+    if (await sessionExists(a.session)) live.push(a.session);
+  }
+  await buildGrid(GRID_SESSION, live);
+  return live.length;
 }
