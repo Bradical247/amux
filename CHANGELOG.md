@@ -16,6 +16,10 @@ All notable changes to hivemux are documented here. Format loosely follows
   - **Loop-history viewer**: click an agent's loop line to see its per-iteration
     record (`/api/loop/log`).
   - **Prune** button (`/api/prune`).
+  - **Tile view**: every live agent's terminal in one responsive grid (no more
+    clicking tab to tab). A tile lights up, blinks, and chimes the moment its agent
+    transitions to done/waiting/error. Tile terminals reload once on mount so a
+    cold `ttyd` never leaves a broken pane.
 - New web endpoints: `/api/loop/log`, `/api/prune`, `/api/mcp`; `/api/loop/start`
   now accepts `rubric`, `runner`, `fleet`, `commit`, and `pr`.
 - **`--ponytail`**: a loop option (CLI, GUI checkbox, MCP `start_loop` param) that

@@ -17,6 +17,8 @@
 
 <p align="center"><img src="assets/gui-mcp.png" alt="hivemux MCP panel" width="820" /><br/><sub>the in-app MCP panel: copy-paste client config and the live tool list, so a conductor agent can drive the fleet</sub></p>
 
+<p align="center"><img src="assets/gui-grid.gif" alt="hivemux tiled view" width="820" /><br/><sub>tile view: every agent's live terminal at once. A tile lights up, blinks, and chimes the moment its agent finishes</sub></p>
+
 Run many coding agents (Claude Code, Codex, Gemini, Aider, …) at once, each in
 its own isolated git worktree and tmux session, and manage them all from one
 place. Because hivemux is built on tmux, it runs headless over SSH, persists
@@ -46,7 +48,9 @@ across disconnects, and lives on a remote box you attach to from anywhere.
   workspaces (status + notification rings) and an embedded live terminal per agent
   (via [ttyd](https://github.com/tsl0922/ttyd)). The toolbar drives the full feature
   set (loop, fleet, MCP setup, merge, PR, broadcast, prune, kill), plus a loop-history
-  viewer and live usage.
+  viewer and live usage. **Tile** shows every agent's terminal at once, and a tile
+  lights up, blinks, and chimes the moment its agent finishes, so you never click
+  through tabs to find the one that needs you.
 - 🐝 **Parallel agents, fully isolated**: each agent runs in its own git worktree
   (its own branch, no file collisions) and its own tmux session.
 - 🛰️ **Headless and remote-first**: tmux-backed, so it runs over SSH on a server, the

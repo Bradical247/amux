@@ -71,7 +71,20 @@ export const PAGE = /* html */ `<!doctype html>
   .top .sp{flex:1}
   .top input{width:210px}
   .stage{flex:1;position:relative;background:#010409}
-  iframe{border:0;width:100%;height:100%;display:none;background:#010409}
+  iframe#term{border:0;width:100%;height:100%;display:none;background:#010409}
+  .grid{display:none;position:absolute;inset:0;overflow:auto;gap:1px;background:var(--bd);
+        grid-template-columns:repeat(auto-fit,minmax(360px,1fr));grid-auto-rows:minmax(220px,1fr)}
+  .grid.on{display:grid}
+  .grid .cell{display:flex;flex-direction:column;background:#010409;min-height:220px;min-width:0}
+  .grid .hd{display:flex;align-items:center;gap:6px;padding:4px 9px;font-size:11px;
+        border-bottom:1px solid var(--bd);cursor:pointer;background:#0b0e13}
+  .grid .hd:hover{background:#11161d}
+  .grid .hd .mut{color:var(--mut)}
+  .grid .cell iframe{flex:1;border:0;width:100%;background:#010409}
+  .grid .cell.attn{--gc:var(--cyn);animation:tileattn .9s ease-in-out infinite;z-index:1}
+  .grid .cell.attn.done{--gc:var(--cyn)} .grid .cell.attn.waiting{--gc:var(--ylw)} .grid .cell.attn.error{--gc:var(--red)}
+  @keyframes tileattn{0%,100%{box-shadow:inset 0 0 0 3px var(--gc),0 0 16px var(--gc)}50%{box-shadow:inset 0 0 0 3px transparent,0 0 0 transparent}}
+  button.active{border-color:var(--grn);color:var(--grn)}
   .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);flex-direction:column;gap:8px;text-align:center}
   .empty kbd{background:#161b22;border:1px solid var(--bd);border-radius:4px;padding:1px 6px}
 
@@ -118,6 +131,7 @@ export const PAGE = /* html */ `<!doctype html>
 <section class="main">
   <div class="top">
     <span class="cur" id="cur">no agent selected</span>
+    <button id="tilebtn" title="tile every agent's terminal in one view">tile</button>
     <span class="sp"></span>
     <span id="totalcost" style="color:var(--mut);font-size:12px"></span>
     <input id="bcast" placeholder="broadcast to agent…" />
@@ -133,6 +147,7 @@ export const PAGE = /* html */ `<!doctype html>
   </div>
   <div class="stage">
     <iframe id="term" title="terminal" sandbox="allow-scripts allow-same-origin"></iframe>
+    <div class="grid" id="grid"></div>
     <div class="empty" id="empty">▦<br/>select an agent, or press <kbd>n</kbd> for a new one</div>
   </div>
 </section>
@@ -231,12 +246,13 @@ const ICON={
   kill:SVG('<path d="M4.5 4.5l7 7"/><path d="M11.5 4.5l-7 7"/>'),
   prune:SVG('<circle cx="4" cy="11" r="1.6"/><circle cx="4" cy="5" r="1.6"/><path d="M5.4 9.9L12 4"/><path d="M5.4 6.1L12 12"/>'), // scissors
   add:SVG('<path d="'+HEX+'"/><path d="M8 5.5v5M5.5 8h5"/>'),          // + in hex
+  tile:SVG('<rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/>'),
 };
 
 // decorate the toolbar buttons with their brand glyphs
 [['bcastbtn','send','send'],['loopbtn','loop','loop'],['mergebtn','merge','merge'],
  ['prbtn','pr','PR'],['killbtn','kill','kill'],['fleetbtn','fleet','fleet'],
- ['mcpbtn','mcp','MCP'],['prunebtn','prune','prune']].forEach(([id,ic,lbl])=>{
+ ['mcpbtn','mcp','MCP'],['prunebtn','prune','prune'],['tilebtn','tile','tile']].forEach(([id,ic,lbl])=>{
   const b=$(id);if(b)b.innerHTML=ICON[ic]+lbl;
 });
 $('newbtn').innerHTML=ICON.add+'new agent <span style="color:var(--mut)">(n)</span>';
@@ -281,7 +297,7 @@ function renderList(){
         \${pending.has(a.name)?\`<div class="pend" onclick="event.stopPropagation()">commit/PR held <button class="mini ok" onclick="approveAgent('\${esc(a.name)}')">approve</button><button class="mini" onclick="denyAgent('\${esc(a.name)}')">deny</button></div>\`:''}
         \${usageLine(a.name)}
       </span>
-    </div>\`).join('')||'<div style="color:var(--mut);padding:14px">no agents yet — press <b>n</b></div>';
+    </div>\`).join('')||'<div style="color:var(--mut);padding:14px">no agents yet, press <b>n</b></div>';
 }
 function usageLine(name){
   const r=usage[name]; if(!r)return '';
@@ -433,16 +449,65 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ---- live updates: chimes / notifications / title badge ---- */
+/* ---- tiled view: every live agent's terminal at once ---- */
+let tiled=false; const cells=new Map(); let gridSigCur='';
+function gridSig(){return agents.filter(a=>a.status!=='dead').map(a=>a.name).sort().join(',');}
+function setTiled(on){
+  tiled=on;
+  $('grid').classList.toggle('on',on);
+  $('tilebtn').classList.toggle('active',on);
+  $('term').style.display=(!on&&selected)?'block':'none';
+  $('empty').style.display=(!on&&!selected)?'flex':'none';
+  if(on)renderGrid(); else {$('grid').innerHTML='';cells.clear();}
+}
+$('tilebtn').onclick=()=>setTiled(!tiled);
+function renderGrid(){
+  const g=$('grid');g.innerHTML='';cells.clear();gridSigCur=gridSig();
+  const live=agents.filter(a=>a.status!=='dead');
+  if(!live.length){g.innerHTML='<div class="empty" style="position:static">no live agents, press <kbd>n</kbd></div>';return;}
+  for(const a of live){
+    const cell=document.createElement('div');cell.className='cell';cell.dataset.agent=a.name;
+    const hd=document.createElement('div');hd.className='hd';
+    hd.innerHTML='<span class="ring '+esc(a.status)+'"></span><b>'+esc(a.name)+'</b> <span class="mut">'+esc(a.status)+'</span>';
+    hd.onclick=()=>{clearAttn(a.name);select(a.name);setTiled(false);};
+    const fr=document.createElement('iframe');fr.setAttribute('sandbox','allow-scripts allow-same-origin');
+    cell.appendChild(hd);cell.appendChild(fr);
+    cell.addEventListener('mousedown',()=>clearAttn(a.name));
+    g.appendChild(cell);cells.set(a.name,{cell,hd});
+    loadTerm(fr,a.name);
+  }
+}
+// Mount a tile's ttyd, then reload once: ttyd spawns on demand and may not be
+// listening when the iframe first navigates (a cold tile would show a broken page).
+function loadTerm(fr,name){
+  api('/api/term/'+encodeURIComponent(name)).then(r=>r.json()).then(j=>{
+    if(!j||!j.port)return;
+    const url='http://'+location.hostname+':'+j.port;
+    fr.src=url;
+    setTimeout(()=>{fr.src='about:blank';setTimeout(()=>{fr.src=url;},60);},1700);
+  }).catch(()=>{});
+}
+function clearAttn(name){const c=cells.get(name);if(c)c.cell.classList.remove('attn','done','waiting','error');}
+function flashCell(name,status){const c=cells.get(name);if(!c)return;c.cell.classList.remove('done','waiting','error');c.cell.classList.add('attn',status);}
+function syncCells(list){
+  if(!tiled)return;
+  if(gridSig()!==gridSigCur){renderGrid();return;} // agent added or removed → rebuild
+  list.forEach(a=>{const c=cells.get(a.name);if(!c)return;
+    const ring=c.hd.querySelector('.ring');if(ring)ring.className='ring '+a.status;
+    const mut=c.hd.querySelector('.mut');if(mut)mut.textContent=a.status;});
+}
+
 function onSnapshot(list){
   list.forEach(a=>{
     const p=prevStatus[a.name];
     if(p&&p!==a.status){
-      if(a.status==='waiting'){beep(CHIME.waiting);notify('hivemux · '+a.name+' needs you',a.note);toast(a.name+' is waiting','warn');}
-      else if(a.status==='done'){beep(CHIME.done);notify('hivemux · '+a.name+' done',a.note);toast(a.name+' done','ok');}
-      else if(a.status==='error'){beep(CHIME.error);notify('hivemux · '+a.name+' error',a.note);toast(a.name+' error','err');}
+      if(a.status==='waiting'){beep(CHIME.waiting);notify('hivemux · '+a.name+' needs you',a.note);toast(a.name+' is waiting','warn');flashCell(a.name,'waiting');}
+      else if(a.status==='done'){beep(CHIME.done);notify('hivemux · '+a.name+' done',a.note);toast(a.name+' done','ok');flashCell(a.name,'done');}
+      else if(a.status==='error'){beep(CHIME.error);notify('hivemux · '+a.name+' error',a.note);toast(a.name+' error','err');flashCell(a.name,'error');}
     }
     prevStatus[a.name]=a.status;
   });
+  syncCells(list);
   const w=list.filter(a=>a.status==='waiting').length;
   document.title=(w?'('+w+') ':'')+'hivemux';
 }
