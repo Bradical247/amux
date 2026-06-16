@@ -3,7 +3,7 @@
 All notable changes to hivemux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
-## [Unreleased]
+## [1.7.0]
 
 ### Added
 - **Works from any directory.** `hivemux new` (and the GUI's new-agent form) now
