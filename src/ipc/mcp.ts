@@ -10,7 +10,7 @@
 import * as readline from "node:readline";
 import * as mgr from "../core/manager";
 
-const VERSION = "1.3.0";
+export const VERSION = "1.4.0";
 const MAX_AGENTS = 12;
 const DEFAULT_COST_CAP = 5;
 
@@ -40,7 +40,7 @@ const str = (description: string) => ({ type: "string", description });
 const num = (description: string) => ({ type: "number", description });
 const bool = (description: string) => ({ type: "boolean", description });
 
-const TOOLS = [
+export const TOOLS = [
   {
     name: "spawn_agent",
     description:

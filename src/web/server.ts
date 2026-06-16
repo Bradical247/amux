@@ -9,6 +9,7 @@ import * as mgr from "../core/manager";
 import { ensureTerminal, stopAllTerminals, stopTerminal } from "../core/terminals";
 import type { NewAgentOpts, Status } from "../core/types";
 import { Watcher } from "../core/watcher";
+import { TOOLS as MCP_TOOLS, VERSION as MCP_VERSION } from "../ipc/mcp";
 import { PAGE } from "./page";
 
 function json(res: http.ServerResponse, body: unknown, code = 200): void {
@@ -141,12 +142,31 @@ export async function startWeb(
       }
       if (req.method === "POST" && path === "/api/loop/start") {
         const b = await readBody(req);
-        mgr.startLoopBg(b.name as string, {
+        const spec = {
           goal: b.goal as string,
           check: b.check as string | undefined,
           rubric: b.rubric as string | undefined,
           maxIters: typeof b.max === "number" ? b.max : 10,
-        });
+          runner: (b.runner as string | undefined) || undefined,
+        };
+        const opts = { commit: Boolean(b.commit), pr: Boolean(b.pr) };
+        if (typeof b.fleet === "number" && b.fleet > 0) {
+          const base = (b.name as string) || `fleet-${Date.now().toString(36)}`;
+          void mgr
+            .fleetLoop(
+              base,
+              b.fleet,
+              (b.agent as string) || "claude",
+              (b.repo as string) || ".",
+              spec,
+              opts,
+            )
+            .catch(() => {});
+          return json(res, {
+            started: Array.from({ length: b.fleet as number }, (_, i) => `${base}-${i + 1}`),
+          });
+        }
+        mgr.startLoopBg(b.name as string, spec, opts);
         return json(res, { started: b.name });
       }
       if (req.method === "POST" && path === "/api/loop/stop") {
@@ -155,6 +175,18 @@ export async function startWeb(
       }
       if (req.method === "GET" && path === "/api/loop/running")
         return json(res, mgr.runningLoops());
+      if (req.method === "GET" && path === "/api/loop/log") {
+        const name = url.searchParams.get("name") ?? "";
+        return json(res, await mgr.loopHistory(name));
+      }
+      if (req.method === "POST" && path === "/api/prune") {
+        const b = await readBody(req);
+        const removed = await mgr.prune(Boolean(b.rmWorktree));
+        await pushSnapshot();
+        return json(res, { pruned: removed });
+      }
+      if (req.method === "GET" && path === "/api/mcp")
+        return json(res, { version: MCP_VERSION, tools: MCP_TOOLS });
       if (req.method === "POST" && path === "/api/broadcast") {
         const b = await readBody(req);
         const names = Array.isArray(b.names) ? (b.names as string[]) : [];

@@ -13,55 +13,58 @@
 
 <p align="center"><img src="assets/demo.gif" alt="hivemux demo" width="820" /></p>
 
-<p align="center"><img src="assets/gui.png" alt="hivemux GUI" width="820" /><br/><sub>the <code>hivemux gui</code> desktop window — sidebar workspaces + embedded live terminals</sub></p>
+<p align="center"><img src="assets/gui.png" alt="hivemux GUI" width="820" /><br/><sub>the <code>hivemux gui</code> desktop window — sidebar workspaces, embedded live terminals, and a toolbar that drives the whole feature set</sub></p>
+
+<p align="center"><img src="assets/gui-mcp.png" alt="hivemux MCP panel" width="820" /><br/><sub>the in-app MCP panel — copy-paste client config and the live tool list, so a conductor agent can drive the fleet</sub></p>
 
 Run many coding agents (Claude Code, Codex, Gemini, Aider, …) at once — each in
 its own isolated git worktree and tmux session — and manage them all from one
-place. Unlike desktop-GUI orchestrators, hivemux is built on tmux, so it runs
-**headless over SSH, persists across disconnects, and lives on a remote box you
-attach to from anywhere**.
+place. Because hivemux is built on tmux, it runs headless over SSH, persists
+across disconnects, and lives on a remote box you attach to from anywhere.
 
 > Inspired by [cmux](https://github.com/manaflow-ai/cmux) (macOS/Ghostty).
-> hivemux trades the native GUI for the thing macOS terminals can't give you:
-> the server room.
+> hivemux trades the native GUI for what a terminal multiplexer gives you for
+> free: the server room.
 
 ## Features
 
-- 🧠 **MCP server** — `hivemux mcp` exposes the orchestration as MCP tools, so a
-  **conductor agent** (Claude Code/Desktop, Cursor) drives a hivemux fleet by talking:
-  *"fan out 3 agents on these bugs, loop each until tests pass, $3 cap, merge the greens."*
-  spawn / loop / status / merge / kill over MCP, with cost caps + a concurrency limit.
-- 🔁 **Loop engineering** — `hivemux loop <name> --goal … --check "bun test"` drives an
-  agent **headless** (one-shot per iteration) through **iterate → verify → fix** cycles
-  until the check passes (or it hits a max-iter / cost cap), with exact per-iteration cost.
-  Verifier = a shell check *or* an LLM judge (`--rubric`). Pluggable runner (`--runner`):
-  `claude` built in, codex / gemini / OpenRouter-backed CLIs via config.
-  `--fleet N` runs the same goal on N agents at once; `--commit`/`--pr` land it on pass.
-  This is the bit the other tmux runners don't have: agents that **finish the job
-  unattended, gated by a real check**.
-- 🖥️ **Desktop GUI** — `hivemux gui` opens a cmux-style app window: a sidebar of agent
-  workspaces (status + notification rings) and an **embedded live terminal** per
-  agent (via [ttyd](https://github.com/tsl0922/ttyd)), with merge / PR / broadcast / kill in the toolbar.
-- 🧬 **Parallel agents, fully isolated** — each agent runs in its own git worktree
+- **MCP server** — `hivemux mcp` exposes the orchestration as MCP tools, so a
+  conductor agent (Claude Code/Desktop, Cursor) drives a hivemux fleet
+  conversationally: *"fan out 3 agents on these bugs, loop each until tests pass,
+  $3 cap, merge the greens."* spawn / loop / status / merge / kill over MCP, with
+  per-agent cost caps and a concurrency limit by default.
+- **Loop engineering** — `hivemux loop <name> --goal … --check "bun test"` drives an
+  agent headless (one-shot per iteration) through iterate → verify → fix cycles
+  until the check passes, or it hits a max-iteration or cost cap, with exact
+  per-iteration cost. The verifier is a shell check or an LLM judge (`--rubric`).
+  Pluggable runner (`--runner`): `claude` is built in, codex / gemini /
+  OpenRouter-backed CLIs drop in via config. `--fleet N` runs the same goal on N
+  agents at once; `--commit` / `--pr` land it on pass.
+- **Desktop GUI** — `hivemux gui` opens a cmux-style app window: a sidebar of agent
+  workspaces (status + notification rings) and an embedded live terminal per agent
+  (via [ttyd](https://github.com/tsl0922/ttyd)). The toolbar drives the full feature
+  set — loop, fleet, MCP setup, merge, PR, broadcast, prune, kill — plus a loop-history
+  viewer and live usage.
+- **Parallel agents, fully isolated** — each agent runs in its own git worktree
   (its own branch, no file collisions) and its own tmux session.
-- 🛰️ **Headless & remote-first** — tmux-backed, so it runs over SSH on a server, the
-  agents survive disconnects, and you reattach from anywhere. (cmux is desktop-only.)
-- 📊 **Many ways to watch** — `hivemux ls` table, a live **TUI** (`hivemux dash`), a tiled
-  terminal view (`hivemux grid`), and a remote-reachable **web dashboard** (`hivemux web`).
-- ⚠️ **Conflict detection** — surfaces files touched by more than one agent *before*
-  you merge, in the CLI and both dashboards.
-- 💸 **Usage & cost observability** — per-agent token counts, estimated cost, and
-  context-window fill (`hivemux usage` + the dashboards). Anthropic rates ship grounded;
-  any other LLM is priced via `~/.hivemux/config.json`. Set `--cost-cap`/`--ctx-cap` and
-  get a chime + Slack/webhook alert when an agent crosses it.
-- 🔀 **Merge / PR orchestration** — `hivemux merge` lands a branch (clean-aborts on
+- **Headless and remote-first** — tmux-backed, so it runs over SSH on a server, the
+  agents survive disconnects, and you reattach from anywhere.
+- **Many ways to watch** — an `hivemux ls` table, a live TUI (`hivemux dash`), a tiled
+  terminal view (`hivemux grid`), and a remote-reachable web dashboard (`hivemux web`).
+- **Conflict detection** — surfaces files touched by more than one agent before you
+  merge, in the CLI and both dashboards.
+- **Usage and cost observability** — per-agent token counts, estimated cost, and
+  context-window fill (`hivemux usage` and the dashboards). Anthropic rates ship
+  grounded; any other LLM is priced via `~/.hivemux/config.json`. Set `--cost-cap` /
+  `--ctx-cap` for a chime and a Slack/webhook alert when an agent crosses it.
+- **Merge and PR orchestration** — `hivemux merge` lands a branch (clean-aborts on
   conflict); `hivemux pr` pushes and opens a GitHub PR.
-- 📣 **Broadcast** — `hivemux broadcast` types the same prompt into many agents at once.
-- 🔔 **Status notifications** — agents report `waiting`/`done`/`error` via `hivemux notify`
-  (wire it into agent hooks); a daemon pushes live events to every client.
-- 🔒 **Authenticated when exposed** — the web dashboard auto-mints a token the moment
-  it binds beyond loopback.
-- 📦 **Single-binary distribution** — `bun build --compile` produces one self-contained
+- **Broadcast** — `hivemux broadcast` types the same prompt into many agents at once.
+- **Status notifications** — agents report `waiting` / `done` / `error` via
+  `hivemux notify` (wire it into agent hooks); a daemon pushes live events to every client.
+- **Authenticated when exposed** — the web dashboard auto-mints a token the moment it
+  binds beyond loopback.
+- **Single-binary distribution** — `bun build --compile` produces one self-contained
   executable; the target machine needs nothing installed.
 
 ## Why tmux as the base
@@ -79,12 +82,13 @@ adds the agent-specific concerns on top:
 
 ## Status
 
-**v0.5.** Working: `new`, `ls`, `attach`, `kill`, `notify`, `agents`, `conflicts`,
-`broadcast`, `merge`, `pr`, `dash` (live TUI), `grid` (tiled live view), `web`
-(dashboard + SSE + auth + create form), `gui` (cmux-style desktop window),
-`daemon`, `watch`.
+**v1.4.** Working: `new`, `ls`, `attach`, `kill`, `prune`, `notify`, `agents`,
+`conflicts`, `broadcast`, `merge`, `pr`, `loop` (+ fleet, detach, history), `usage`,
+`dash` (live TUI), `grid` (tiled live view), `web` (dashboard + SSE + auth + create
+form + loop/fleet/MCP controls), `gui` (cmux-style desktop window), `daemon`,
+`watch`, `mcp` (MCP server).
 
-📖 **New here? Read the [usage guide / runbook](docs/GUIDE.md)** — task-oriented recipes.
+New here? Read the [usage guide / runbook](docs/GUIDE.md) — task-oriented recipes.
 
 ## Commands
 
@@ -151,8 +155,7 @@ bun run build      # compiles a single standalone binary -> dist/hivemux
 
 `bun run build` produces a self-contained executable (the Bun runtime is embedded),
 so the target machine needs **nothing installed** to run it — copy `dist/hivemux` to a
-server and go. This is the distribution edge over cmux's macOS `.dmg`: one static
-Linux binary, headless-friendly.
+server and go.
 
 Requires (build/dev): [Bun](https://bun.sh) `>= 1.1`, `tmux >= 3.2`, `git`, plus
 whatever agent CLIs you drive. Dev without building: `bun src/cli.ts <args>`.

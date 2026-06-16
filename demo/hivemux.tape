@@ -7,10 +7,10 @@ Output assets/demo.gif
 Set Shell "bash"
 Set FontSize 18
 Set Width 1200
-Set Height 720
+Set Height 760
 Set Padding 24
 Set Theme "GitHub Dark"
-Set TypingSpeed 60ms
+Set TypingSpeed 55ms
 
 # A throwaway repo so the demo is self-contained.
 Hide
@@ -20,23 +20,30 @@ Show
 
 Type "hivemux new fix-auth --agent shell"
 Enter
-Sleep 1200ms
+Sleep 1s
 
 Type "hivemux new add-tests --agent shell"
 Enter
-Sleep 1200ms
+Sleep 1s
 
 Type "hivemux ls"
 Enter
 Sleep 2s
 
-Type "hivemux broadcast --message 'echo running tests'"
-Enter
-Sleep 1500ms
-
-Type "hivemux conflicts"
+# Usage + cost observability across the fleet.
+Type "hivemux usage"
 Enter
 Sleep 2500ms
+
+# Conflict detection before you merge.
+Type "hivemux conflicts"
+Enter
+Sleep 2s
+
+# Loop engineering: iterate -> verify -> fix until a check passes.
+Type "hivemux loop --help"
+Enter
+Sleep 3s
 
 # Cleanup (hidden).
 Hide

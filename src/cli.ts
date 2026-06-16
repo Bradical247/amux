@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name("hivemux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
-  .version("1.3.0");
+  .version("1.4.0");
 
 function fail(msg: string): never {
   console.error(`hivemux: ${msg}`);

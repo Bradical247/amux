@@ -72,6 +72,16 @@ export const PAGE = /* html */ `<!doctype html>
   .advbox.open{display:flex}
   .ferr{color:var(--red);font-size:12px;min-height:14px}
   .row2{display:flex;gap:8px;justify-content:flex-end}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .checks{display:flex;gap:16px;font-size:12px;color:var(--mut)}
+  .checks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .checks input{width:auto}
+  .code{background:#010409;border:1px solid var(--bd);border-radius:6px;padding:8px 10px;font-size:12px;white-space:pre-wrap;word-break:break-all;color:var(--cyn)}
+  .tool{padding:7px 0;border-bottom:1px solid var(--bd)}
+  .tool .tn{color:var(--grn);font-weight:600}
+  .tool .td{color:var(--mut);font-size:11px;margin-top:2px}
+  .logrow{padding:6px 0;border-bottom:1px solid var(--bd)}
+  .logrow .li{color:var(--ylw)} .logrow .lp{color:var(--grn)} .logrow .lf{color:var(--red)}
   .spin{display:inline-block;width:11px;height:11px;border:2px solid #fff3;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -85,7 +95,7 @@ export const PAGE = /* html */ `<!doctype html>
 <body>
 <aside class="side">
   <div class="brand"><span class="dot" id="live"></span> hivemux <span id="count" style="color:var(--mut);font-weight:400;font-size:12px"></span>
-    <span class="sp"></span><button class="snd" id="snd" title="sound on/off">🔔</button></div>
+    <span class="sp"></span><button class="snd" id="snd" title="sound on/off">sound</button></div>
   <button class="new" id="newbtn">+ new agent <span style="color:var(--mut)">(n)</span></button>
   <div class="list" id="list"></div>
   <div class="conf" id="conf" style="display:none"><b>⚠ conflicts</b><div id="conflist"></div></div>
@@ -101,6 +111,10 @@ export const PAGE = /* html */ `<!doctype html>
     <button id="mergebtn">merge</button>
     <button id="prbtn">PR</button>
     <button id="killbtn">kill</button>
+    <span style="width:1px;height:20px;background:var(--bd);margin:0 2px"></span>
+    <button id="fleetbtn" title="run one goal across N fresh agents">fleet</button>
+    <button id="mcpbtn" title="drive hivemux from an MCP client">MCP</button>
+    <button id="prunebtn" title="remove agents whose tmux session is gone">prune</button>
   </div>
   <div class="stage">
     <iframe id="term" title="terminal"></iframe>
@@ -126,6 +140,55 @@ export const PAGE = /* html */ `<!doctype html>
     <div class="ferr" id="f_err"></div>
     <div class="row2"><button type="button" id="cancel">cancel</button><button type="submit" id="createbtn">create</button></div>
   </form>
+</div>
+<div class="modal" id="loopmodal">
+  <form class="sheet" id="loopform">
+    <h3 id="loophdr">loop</h3>
+    <div class="field"><label>goal</label><input id="l_goal" placeholder="make the failing test pass" autocomplete="off" required /></div>
+    <div class="field"><label>verifier</label>
+      <select id="l_vtype"><option value="check">shell check (exit 0 = pass)</option><option value="rubric">LLM judge (rubric)</option></select>
+    </div>
+    <div class="field" id="l_checkfield"><label>shell check</label><input id="l_check" placeholder="bun test" autocomplete="off" /></div>
+    <div class="field" id="l_rubricfield" style="display:none"><label>rubric</label><input id="l_rubric" placeholder="all tests pass and lint is clean" autocomplete="off" /></div>
+    <div class="grid2">
+      <div class="field"><label>max iterations</label><input id="l_max" type="number" min="1" value="10" /></div>
+      <div class="field"><label>runner</label><select id="l_runner"></select></div>
+    </div>
+    <div class="field" id="l_fleetfield" style="display:none">
+      <div class="grid2">
+        <div><label>fleet size</label><input id="l_fleet" type="number" min="2" value="3" /></div>
+        <div><label>repo</label><input id="l_repo" value="." autocomplete="off" /></div>
+      </div>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="l_commit" /> commit on pass</label>
+      <label><input type="checkbox" id="l_pr" /> open PR on pass</label>
+    </div>
+    <div class="ferr" id="l_err"></div>
+    <div class="row2"><button type="button" id="l_cancel">cancel</button><button type="submit" id="l_start">start</button></div>
+  </form>
+</div>
+
+<div class="modal" id="logmodal">
+  <div class="sheet" style="width:560px">
+    <h3 id="loghdr">loop history</h3>
+    <div id="logbody" style="max-height:60vh;overflow:auto;font-size:12px"></div>
+    <div class="row2"><button type="button" id="log_close">close</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mcpmodal">
+  <div class="sheet" style="width:620px">
+    <h3>MCP server</h3>
+    <p style="margin:0;color:var(--mut);font-size:12px">Drive a hivemux fleet from any MCP client (Claude Code, Claude Desktop, Cursor). A conductor agent spawns workers, starts verify-fix loops, watches status, and merges the passes.</p>
+    <div class="field"><label>command</label><div class="code" id="mcp_cmd">hivemux mcp</div></div>
+    <div class="field"><label>client config (claude_desktop_config.json / .mcp.json)</label>
+      <div class="code" id="mcp_cfg"></div>
+      <button type="button" id="mcp_copy" style="margin-top:6px">copy config</button>
+    </div>
+    <div class="field"><label>tools (<span id="mcp_count"></span>)</label><div id="mcp_tools" style="max-height:34vh;overflow:auto"></div></div>
+    <div class="row2"><button type="button" id="mcp_close">close</button></div>
+  </div>
 </div>
 <div class="toasts" id="toasts"></div>
 
@@ -156,8 +219,9 @@ function notify(title,body){
   try{if(window.Notification&&Notification.permission==='granted')new Notification(title,{body:body||'',silent:true});}catch(e){}
 }
 function arm(){ if(AC&&AC.state==='suspended')AC.resume(); if(window.Notification&&Notification.permission==='default')Notification.requestPermission(); }
-$('snd').onclick=()=>{SOUND=!SOUND;localStorage.setItem('hivemux_sound',SOUND?'on':'off');$('snd').textContent=SOUND?'🔔':'🔕';if(SOUND){arm();beep(CHIME.new);}};
-$('snd').textContent=SOUND?'🔔':'🔕';
+$('snd').onclick=()=>{SOUND=!SOUND;localStorage.setItem('hivemux_sound',SOUND?'on':'off');$('snd').textContent=SOUND?'sound':'muted';$('snd').style.opacity=SOUND?'1':'.5';if(SOUND){arm();beep(CHIME.new);}};
+$('snd').textContent=SOUND?'sound':'muted';
+$('snd').style.opacity=SOUND?'1':'.5';
 
 /* ---- toasts ---- */
 function toast(msg,kind){
@@ -174,7 +238,7 @@ function renderList(){
       <span class="meta">
         <div class="nm">\${esc(a.name)} \${conflicted.has(a.name)?'<span class="warn">⚠</span>':''}</div>
         <div class="sub">\${esc(a.status)} · \${esc(a.branch)}\${a.note?' · '+esc(a.note):''}</div>
-        \${a.loop?\`<div class="sub" style="color:var(--ylw)">loop \${a.loop.iter}/\${a.loop.maxIters} [\${esc(a.loop.state)}]</div>\`:''}
+        \${a.loop?\`<div class="sub" style="color:var(--ylw);cursor:pointer" onclick="event.stopPropagation();openLog('\${esc(a.name)}')" title="loop history">loop \${a.loop.iter}/\${a.loop.maxIters} [\${esc(a.loop.state)}] · log</div>\`:''}
         \${usageLine(a.name)}
       </span>
     </div>\`).join('')||'<div style="color:var(--mut);padding:14px">no agents yet — press <b>n</b></div>';
@@ -211,14 +275,73 @@ $('bcastbtn').onclick=async()=>{if(!selected)return;const t=$('bcast').value.tri
 $('mergebtn').onclick=async()=>{if(!selected)return;const r=await postJSON('/api/merge',{name:selected});const j=await r.json();j.merged?toast('merged '+selected+' → '+j.into,'ok'):toast('conflicts: '+((j.conflicts||[]).join(', ')||j.error),'err');};
 $('prbtn').onclick=async()=>{if(!selected)return;const r=await postJSON('/api/pr',{name:selected});const j=await r.json();j.url?toast('PR: '+j.url,'ok'):toast(j.error||'failed','err');};
 $('killbtn').onclick=async()=>{if(!selected)return;if(!confirm('kill '+selected+'?'))return;const n=selected;await postJSON('/api/kill',{name:n,rmWorktree:false});selected=null;$('term').style.display='none';$('empty').style.display='flex';$('cur').textContent='no agent selected';toast('killed '+n,'warn');};
-$('loopbtn').onclick=async()=>{
-  if(!selected)return;
+/* ---- loop / fleet modal ---- */
+let fleetMode=false;
+function openLoop(fleet){
+  fleetMode=fleet;
+  if(!fleet&&!selected){toast('select an agent first','warn');return;}
   const a=agents.find(x=>x.name===selected);
-  if(a&&a.loop&&a.loop.state==='running'){await postJSON('/api/loop/stop',{name:selected});toast('stopping loop '+selected,'warn');return;}
-  const goal=prompt('loop goal:');if(!goal)return;
-  const check=prompt('shell check (exit 0 = pass), blank for none:')||'';
-  await postJSON('/api/loop/start',{name:selected,goal,check:check||undefined,max:10});
-  toast('loop started on '+selected,'ok');
+  if(!fleet&&a&&a.loop&&a.loop.state==='running'){postJSON('/api/loop/stop',{name:selected});toast('stopping loop '+selected,'warn');return;}
+  $('loophdr').textContent=fleet?'fleet loop':('loop · '+(selected||''));
+  $('l_fleetfield').style.display=fleet?'block':'none';
+  $('l_err').textContent='';
+  $('loopmodal').classList.add('open');$('l_goal').focus();
+}
+$('loopbtn').onclick=()=>openLoop(false);
+$('fleetbtn').onclick=()=>openLoop(true);
+$('l_cancel').onclick=()=>$('loopmodal').classList.remove('open');
+$('loopmodal').onclick=e=>{if(e.target===$('loopmodal'))$('loopmodal').classList.remove('open');};
+$('l_vtype').onchange=()=>{const r=$('l_vtype').value==='rubric';$('l_checkfield').style.display=r?'none':'block';$('l_rubricfield').style.display=r?'block':'none';};
+$('loopform').onsubmit=async ev=>{
+  ev.preventDefault();
+  const goal=$('l_goal').value.trim();if(!goal)return;
+  const body={goal,max:Number($('l_max').value)||10,runner:$('l_runner').value||undefined,
+    commit:$('l_commit').checked,pr:$('l_pr').checked};
+  if($('l_vtype').value==='rubric')body.rubric=$('l_rubric').value.trim()||undefined;
+  else body.check=$('l_check').value.trim()||undefined;
+  if(fleetMode){body.name='fleet-'+Date.now().toString(36);body.fleet=Number($('l_fleet').value)||3;body.repo=$('l_repo').value.trim()||'.';}
+  else body.name=selected;
+  const r=await postJSON('/api/loop/start',body);const j=await r.json();
+  $('loopmodal').classList.remove('open');
+  toast(fleetMode?('fleet started: '+(j.started||[]).join(', ')):('loop started on '+selected),'ok');
+};
+
+/* ---- loop history viewer ---- */
+async function openLog(name){
+  $('loghdr').textContent='loop history · '+name;
+  $('logbody').innerHTML='<div style="color:var(--mut)">loading…</div>';
+  $('logmodal').classList.add('open');
+  const hist=await (await api('/api/loop/log?name='+encodeURIComponent(name))).json();
+  if(!hist.length){$('logbody').innerHTML='<div style="color:var(--mut)">no history yet</div>';return;}
+  $('logbody').innerHTML=hist.map(h=>{
+    const pass=h.passed===true,fail=h.passed===false;
+    const cls=pass?'lp':fail?'lf':'li';
+    const it=h.iter!=null?('iter '+h.iter):(h.event||'');
+    const cost=h.costUSD!=null?(' · $'+Number(h.costUSD).toFixed(3)):'';
+    const verdict=pass?' · PASS':fail?' · fail':'';
+    return \`<div class="logrow"><span class="\${cls}">\${esc(it)}\${verdict}\${cost}</span>\${h.note?'<div style="color:var(--mut)">'+esc(String(h.note))+'</div>':''}</div>\`;
+  }).join('');
+}
+$('log_close').onclick=()=>$('logmodal').classList.remove('open');
+$('logmodal').onclick=e=>{if(e.target===$('logmodal'))$('logmodal').classList.remove('open');};
+
+/* ---- MCP panel ---- */
+$('mcpbtn').onclick=async()=>{
+  const m=await (await api('/api/mcp')).json();
+  const cfg=JSON.stringify({mcpServers:{hivemux:{command:'hivemux',args:['mcp']}}},null,2);
+  $('mcp_cfg').textContent=cfg;
+  $('mcp_count').textContent=(m.tools||[]).length+' · v'+m.version;
+  $('mcp_tools').innerHTML=(m.tools||[]).map(t=>\`<div class="tool"><span class="tn">\${esc(t.name)}</span><div class="td">\${esc(t.description)}</div></div>\`).join('');
+  $('mcp_copy').onclick=()=>{navigator.clipboard.writeText(cfg).then(()=>toast('config copied','ok'),()=>toast('copy failed','err'));};
+  $('mcpmodal').classList.add('open');
+};
+$('mcp_close').onclick=()=>$('mcpmodal').classList.remove('open');
+$('mcpmodal').onclick=e=>{if(e.target===$('mcpmodal'))$('mcpmodal').classList.remove('open');};
+
+/* ---- prune ---- */
+$('prunebtn').onclick=async()=>{
+  const r=await postJSON('/api/prune',{rmWorktree:false});const j=await r.json();
+  toast(j.pruned&&j.pruned.length?('pruned '+j.pruned.join(', ')):'nothing to prune',j.pruned&&j.pruned.length?'ok':'info');
 };
 
 /* ---- new-agent modal ---- */
@@ -296,9 +419,11 @@ async function loadUsage(){
 async function boot(){
   const keys=await (await api('/api/agent-keys')).json();
   $('f_agent').innerHTML=keys.map(k=>\`<option>\${esc(k)}</option>\`).join('');
+  $('l_runner').innerHTML=['claude',...keys.filter(k=>k!=='claude')].map(k=>\`<option>\${esc(k)}</option>\`).join('');
   agents=await (await api('/api/agents')).json();
   agents.forEach(a=>prevStatus[a.name]=a.status); // seed, don't chime existing
   renderList();await loadConflicts();onSnapshot(agents);await loadUsage();
+  if(agents.length&&!selected)select(agents[0].name); // open the first workspace by default
   setInterval(loadUsage,6000);
   const ev=new EventSource('/api/events'+Q);
   ev.onopen=()=>$('live').classList.add('live');

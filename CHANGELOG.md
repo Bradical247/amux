@@ -3,6 +3,25 @@
 All notable changes to hivemux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [1.4.0]
+
+### Added
+- **Full GUI parity** — the web/desktop dashboard now drives the whole feature set,
+  not just create/merge/PR/kill:
+  - **Loop** modal (replaces the old `prompt()` chain): goal, shell-check *or*
+    LLM-judge rubric, max iterations, runner select, and commit/PR-on-pass toggles.
+  - **Fleet** — start one goal across N fresh agents from the toolbar.
+  - **MCP** panel — the `hivemux mcp` command, a copy-paste client config, and the
+    live tool list (served from `/api/mcp`).
+  - **Loop-history viewer** — click an agent's loop line to see its per-iteration
+    record (`/api/loop/log`).
+  - **Prune** button (`/api/prune`).
+- New web endpoints: `/api/loop/log`, `/api/prune`, `/api/mcp`; `/api/loop/start`
+  now accepts `rubric`, `runner`, `fleet`, `commit`, and `pr`.
+
+### Changed
+- Brand refreshed to a honeycomb mark; documentation de-emojified and tightened.
+
 ## [1.3.0]
 
 ### Added
@@ -60,7 +79,7 @@ All notable changes to hivemux are documented here. Format loosely follows
 
 ### Changed
 - **Renamed `amux` → `hivemux`** — the old name collided with an established
-  127★ tool in the same niche (and npm). New repo, binary, state dir
+  127-star tool in the same niche (and npm). New repo, binary, state dir
   (`~/.hivemux`), env (`HIVEMUX_*`), and brand.
 
 ## [0.7.1]
