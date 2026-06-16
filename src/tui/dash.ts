@@ -40,11 +40,11 @@ export async function runDash(): Promise<void> {
     clear();
     const W = process.stdout.columns ?? 80;
     const cflag = conflicts.length ? `  ${ESC}31m${conflicts.length}⚠${ESC}0m` : "";
-    out(`${ESC}1m amux${ESC}0m  ${agents.length} agents${cflag}\n`);
+    out(`${ESC}1m hivemux${ESC}0m  ${agents.length} agents${cflag}\n`);
     out(`${"─".repeat(W)}\n`);
 
     if (agents.length === 0) {
-      out("\n  no agents. start one:  amux new <name>\n");
+      out("\n  no agents. start one:  hivemux new <name>\n");
     } else {
       const conflictedAgents = new Set(conflicts.flatMap((c) => c.agents));
       const head = ["", "NAME", "STATUS", "AGENT", "BRANCH", "NOTE"];

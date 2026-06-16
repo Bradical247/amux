@@ -4,19 +4,19 @@
 
 **Title** (≤ 80 chars):
 
-> Show HN: amux – cmux for Linux, run parallel AI coding agents in tmux
+> Show HN: hivemux – cmux for Linux, run parallel AI coding agents in tmux
 
-**URL:** https://github.com/Bradical247/amux
+**URL:** https://github.com/Bradical247/hivemux
 
 **Body:**
 
-amux runs multiple AI coding agents (Claude Code, Codex, Gemini, Aider) in
+hivemux runs multiple AI coding agents (Claude Code, Codex, Gemini, Aider) in
 parallel — each in its own git worktree and tmux session — and manages them from
 one place: a CLI, a live TUI, a tiled view, a web dashboard, and a cmux-style
 desktop app.
 
 It's inspired by cmux (manaflow-ai/cmux), which is a polished native macOS app.
-amux takes the opposite bet: because it's built on tmux, it runs **headless over
+hivemux takes the opposite bet: because it's built on tmux, it runs **headless over
 SSH**, the agents **survive disconnects**, and you can host them on a remote box
 and attach from anywhere — which a desktop GUI can't do. The desktop app and web
 dashboard are just frontends over the same tmux-backed core, so you get the GUI
@@ -42,7 +42,7 @@ agents.
 
 ## First comment (post immediately after)
 
-Author here. The design bet is "tmux as the substrate": amux doesn't reimplement
+Author here. The design bet is "tmux as the substrate": hivemux doesn't reimplement
 PTYs/sessions/persistence — tmux already nails those — it adds the agent layer on
 top (worktree isolation, status/notifications, conflict detection, usage/cost).
 That's why it's headless-and-remote-first instead of a desktop app.
@@ -56,23 +56,23 @@ Show HN is gated for new accounts (anti-spam). Plan: comment thoughtfully for
 channels below now (no reputation gate).
 
 ## Channel 1 — awesome lists (evergreen, no gate, highest leverage)
-Open a PR adding amux to lists people already search. Best targets:
+Open a PR adding hivemux to lists people already search. Best targets:
 - `andyrewlee/awesome-agent-orchestrators` (lists cmux et al — direct fit)
 - `rothgar/awesome-tmux`
 - `hesreallyhim/awesome-claude-code` (or similar)
 Entry line:
-> **[amux](https://github.com/Bradical247/amux)** — Linux-native, tmux-backed
+> **[hivemux](https://github.com/Bradical247/hivemux)** — Linux-native, tmux-backed
 > orchestrator for parallel AI coding agents: isolated git worktrees, conflict
 > detection, merge/PR, usage/cost tracking; CLI + TUI + web + desktop GUI.
 
 ## Channel 2 — X / Twitter (post the demo GIF)
-> Built amux: run parallel AI coding agents (Claude Code, Codex, Gemini, Aider)
+> Built hivemux: run parallel AI coding agents (Claude Code, Codex, Gemini, Aider)
 > on Linux — each in its own git worktree + tmux session.
 >
 > Like cmux, but tmux-backed: headless over SSH, survives disconnects, GUI *and*
 > the server room. Conflict detection, merge/PR, token/cost tracking.
 >
-> MIT, single binary + AppImage. https://github.com/Bradical247/amux
+> MIT, single binary + AppImage. https://github.com/Bradical247/hivemux
 Attach `assets/demo.gif`. Reply with `assets/gui.png` (the desktop window).
 
 ## Channel 3 — Reddit (frame as "I built", read each sub's self-promo rule first)
@@ -82,9 +82,9 @@ Attach `assets/demo.gif`. Reply with `assets/gui.png` (the desktop window).
 
 Reddit body:
 > I kept wanting to run several coding agents at once without them clobbering each
-> other, so I built amux: each agent gets its own git worktree + tmux session, and
+> other, so I built hivemux: each agent gets its own git worktree + tmux session, and
 > you manage them from a CLI, a live TUI, a web dashboard, or a desktop app. Because
 > it's tmux-backed it runs headless over SSH and survives disconnects. It also flags
 > file conflicts before you merge and tracks per-agent token cost. MIT, single binary
-> + AppImage. Repo: https://github.com/Bradical247/amux — feedback welcome.
+> + AppImage. Repo: https://github.com/Bradical247/hivemux — feedback welcome.
 

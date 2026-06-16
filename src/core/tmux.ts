@@ -1,5 +1,5 @@
 // Async wrapper over the tmux CLI. tmux is the session/PTY/persistence engine;
-// amux drives it, never reimplements it. Async so a long-lived daemon serving
+// hivemux drives it, never reimplements it. Async so a long-lived daemon serving
 // many clients never blocks the event loop on a shell-out.
 import { execFile, spawnSync } from "node:child_process";
 import { promisify } from "node:util";

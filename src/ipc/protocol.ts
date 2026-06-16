@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 
 export const SOCKET_PATH =
-  process.env.AMUX_SOCKET ?? path.join(os.homedir(), ".amux", "daemon.sock");
+  process.env.HIVEMUX_SOCKET ?? path.join(os.homedir(), ".hivemux", "daemon.sock");
 
 export type Method =
   | "list"

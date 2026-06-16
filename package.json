@@ -1,15 +1,15 @@
 {
-  "name": "amux",
+  "name": "hivemux",
   "version": "1.0.0",
   "description": "Linux-native, tmux-backed orchestrator for parallel AI coding agents in isolated git worktrees.",
   "type": "module",
   "bin": {
-    "amux": "dist/amux"
+    "hivemux": "dist/hivemux"
   },
   "scripts": {
     "dev": "bun src/cli.ts",
-    "build": "bun build src/cli.ts --compile --outfile dist/amux",
-    "start": "./dist/amux",
+    "build": "bun build src/cli.ts --compile --outfile dist/hivemux",
+    "start": "./dist/hivemux",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src package.json biome.json",
     "lint:fix": "biome check --write src package.json biome.json",

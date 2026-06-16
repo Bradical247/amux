@@ -24,10 +24,10 @@ export interface Agent {
   agent: string; // adapter key (claude, codex, ...)
   cmd: string; // launch command
   createdAt: string;
-  status: Status; // self-reported via `amux notify`; overridden to "dead" if session gone
+  status: Status; // self-reported via `hivemux notify`; overridden to "dead" if session gone
   note: string; // last notification text
   // Optional observability state:
-  usage?: RawUsageCounts; // last usage pushed via `amux report-usage`
+  usage?: RawUsageCounts; // last usage pushed via `hivemux report-usage`
   usageModel?: string; // model reported alongside pushed usage
   usageCtx?: number; // context tokens reported alongside pushed usage
   costCap?: number; // alert when estimated cost (USD) crosses this

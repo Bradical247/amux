@@ -1,5 +1,5 @@
 // Pluggable agent adapters. Built-ins below; override or add via
-// ~/.amux/config.json -> { "agents": { "myagent": { "cmd": "..." } } }.
+// ~/.hivemux/config.json -> { "agents": { "myagent": { "cmd": "..." } } }.
 import { readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -17,7 +17,7 @@ const DEFAULTS: Record<string, AgentDef> = {
 };
 
 async function userAgents(): Promise<Record<string, AgentDef>> {
-  const cfgPath = path.join(os.homedir(), ".amux", "config.json");
+  const cfgPath = path.join(os.homedir(), ".hivemux", "config.json");
   try {
     const cfg = JSON.parse(await readFile(cfgPath, "utf8"));
     return (cfg.agents ?? {}) as Record<string, AgentDef>;

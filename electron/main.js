@@ -1,13 +1,13 @@
-// amux desktop shell. Thin Electron wrapper: spawns the bundled `amux web`
-// server on loopback, then loads the dashboard in a native window. The amux and
+// hivemux desktop shell. Thin Electron wrapper: spawns the bundled `hivemux web`
+// server on loopback, then loads the dashboard in a native window. The hivemux and
 // ttyd binaries ride along as packaged resources (see electron-builder config),
-// so the installed app is self-contained — no separate amux/ttyd install needed.
+// so the installed app is self-contained — no separate hivemux/ttyd install needed.
 const { app, BrowserWindow, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const net = require("node:net");
 const path = require("node:path");
 
-const PORT = Number(process.env.AMUX_GUI_PORT || 7878);
+const PORT = Number(process.env.HIVEMUX_GUI_PORT || 7878);
 let server = null;
 let win = null;
 
@@ -29,11 +29,11 @@ function waitForPort(port, onReady) {
 }
 
 function start() {
-  const amux = resourceBin("amux");
+  const hivemux = resourceBin("hivemux");
   const ttydDir = path.dirname(resourceBin("ttyd"));
-  // Put the bundled ttyd on PATH so amux's embedded terminals find it.
+  // Put the bundled ttyd on PATH so hivemux's embedded terminals find it.
   const env = { ...process.env, PATH: `${ttydDir}:${process.env.PATH}` };
-  server = spawn(amux, ["web", "--port", String(PORT), "--host", "127.0.0.1"], {
+  server = spawn(hivemux, ["web", "--port", String(PORT), "--host", "127.0.0.1"], {
     env,
     stdio: "ignore",
   });
@@ -41,7 +41,7 @@ function start() {
   win = new BrowserWindow({
     width: 1280,
     height: 820,
-    title: "amux",
+    title: "hivemux",
     backgroundColor: "#0d1117",
     autoHideMenuBar: true,
     icon: path.join(__dirname, "icon.png"),

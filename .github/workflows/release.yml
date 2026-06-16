@@ -17,17 +17,17 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Build amux binary
+      - name: Build hivemux binary
         run: |
           bun install --frozen-lockfile
           bun run build
 
-      - name: Stage native resources (amux + ttyd)
+      - name: Stage native resources (hivemux + ttyd)
         run: |
           mkdir -p electron/resources
-          cp dist/amux electron/resources/amux
+          cp dist/hivemux electron/resources/hivemux
           curl -fsSL https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 -o electron/resources/ttyd
-          chmod +x electron/resources/amux electron/resources/ttyd
+          chmod +x electron/resources/hivemux electron/resources/ttyd
 
       - uses: actions/setup-node@v4
         with:

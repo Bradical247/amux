@@ -1,4 +1,4 @@
-# amux agent notes
+# hivemux agent notes
 
 Conventions for any agent (or human) working in this repo. Mirrors the spirit of
 cmux's `CLAUDE.md`, adapted to a TypeScript/Node CLI. Full rationale and the cmux
@@ -9,7 +9,7 @@ mapping live in `docs/cmux-standards-review.md`.
 ```bash
 bun install
 bun src/cli.ts <args>   # run from TS, no build
-bun run build           # compile single standalone binary -> dist/amux
+bun run build           # compile single standalone binary -> dist/hivemux
 ```
 
 ## Before finishing any change
@@ -32,7 +32,7 @@ cwd is cosmetic, not a failure.
 - `core/manager.ts` is the **single orchestration path**. CLI, `ipc/` daemon,
   `web/`, and `tui/` are thin frontends that call it. Do not duplicate orchestration
   logic into a frontend — add it to the core and expose it from each surface.
-- The on-disk store (`~/.amux/state.json`) is the single source of truth. It is
+- The on-disk store (`~/.hivemux/state.json`) is the single source of truth. It is
   concurrency-safe (atomic write + lock); preserve that — never do an unguarded
   read-modify-write.
 
@@ -53,13 +53,13 @@ cwd is cosmetic, not a failure.
 - Formatter is enabled (cmux deferred it for legacy-debt reasons we don't have).
 - License is an open maintainer decision (currently MIT; cmux is GPL-3.0).
 
-amux matches cmux's stack: Bun runtime, `bun test`, `moduleResolution: bundler`,
+hivemux matches cmux's stack: Bun runtime, `bun test`, `moduleResolution: bundler`,
 bare relative imports (no `.js`), single-binary distribution via `bun build --compile`.
 
 ## Environment note (Conrad's box)
 
 Do NOT keep the working copy under `~/Projects` (capital P). The lowercase
 `~/projects → ~/suse-projects` symlink makes Bun's bundler canonicalize
-`~/Projects/amux` to the nonexistent `~/suse-projects/amux`, breaking `bun run`,
-`bun test`, and `bun build`. The repo lives at `~/amux` to avoid this. Node was
+`~/Projects/hivemux` to the nonexistent `~/suse-projects/hivemux`, breaking `bun run`,
+`bun test`, and `bun build`. The repo lives at `~/hivemux` to avoid this. Node was
 immune; Bun is not.

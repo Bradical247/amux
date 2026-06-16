@@ -1,5 +1,5 @@
 // Embedded-terminal bridge for the GUI. Like cmux mounts a live terminal per
-// workspace, amux runs one `ttyd` per agent that serves `tmux attach` over HTTP;
+// workspace, hivemux runs one `ttyd` per agent that serves `tmux attach` over HTTP;
 // the GUI embeds it in an <iframe>. ttyd is spawned on demand, bound to loopback,
 // and torn down when the agent is killed or the server stops.
 import { type ChildProcess, spawn } from "node:child_process";

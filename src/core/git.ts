@@ -18,10 +18,10 @@ export function repoName(root: string): string {
 }
 
 export function worktreesDir(root: string): string {
-  return path.join(os.homedir(), ".amux", "worktrees", repoName(root));
+  return path.join(os.homedir(), ".hivemux", "worktrees", repoName(root));
 }
 
-/** Create ~/.amux/worktrees/<repo>/<name> on a fresh branch. Returns the path. */
+/** Create ~/.hivemux/worktrees/<repo>/<name> on a fresh branch. Returns the path. */
 export async function addWorktree(
   root: string,
   name: string,
@@ -99,7 +99,7 @@ export interface MergeResult {
 /**
  * Check out `into` in the main repo and merge `branch`. On conflict, collect the
  * conflicted paths and `merge --abort` so the working tree is left clean rather
- * than half-merged — amux reports, the human resolves.
+ * than half-merged — hivemux reports, the human resolves.
  */
 export async function mergeInto(
   root: string,

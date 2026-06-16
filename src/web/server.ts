@@ -22,7 +22,7 @@ const LOOPBACK = new Set(["127.0.0.1", "localhost", "::1"]);
 /** No token configured = open (loopback only). Otherwise require it via header or query. */
 function authed(req: http.IncomingMessage, url: URL, token: string | undefined): boolean {
   if (!token) return true;
-  return req.headers["x-amux-token"] === token || url.searchParams.get("token") === token;
+  return req.headers["x-hivemux-token"] === token || url.searchParams.get("token") === token;
 }
 
 function readBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {
@@ -45,7 +45,7 @@ export async function startWeb(
   token?: string,
 ): Promise<{ server: http.Server; token: string | undefined }> {
   // Never serve an exposed (non-loopback) dashboard without auth: mint a token.
-  let authToken = token ?? process.env.AMUX_WEB_TOKEN;
+  let authToken = token ?? process.env.HIVEMUX_WEB_TOKEN;
   if (!authToken && !LOOPBACK.has(host)) authToken = randomUUID();
 
   const clients = new Set<http.ServerResponse>();
@@ -70,8 +70,8 @@ export async function startWeb(
       if (!key || alerted.has(key)) continue;
       alerted.add(key);
       const text = r.overCost
-        ? `amux: '${r.name}' hit its cost cap ($${r.usageView.costUSD?.toFixed(2)})`
-        : `amux: '${r.name}' hit its context cap (${r.usageView.ctxPct}%)`;
+        ? `hivemux: '${r.name}' hit its cost cap ($${r.usageView.costUSD?.toFixed(2)})`
+        : `hivemux: '${r.name}' hit its context cap (${r.usageView.ctxPct}%)`;
       const frame = `event: alert\ndata: ${JSON.stringify({ name: r.name, text })}\n\n`;
       for (const c of clients) c.write(frame);
       void emitIntegration(text, r);
@@ -85,11 +85,11 @@ export async function startWeb(
     try {
       if (!authed(req, url, authToken)) {
         res.writeHead(401, { "content-type": "text/plain" });
-        return res.end("unauthorized: append ?token=… or send an x-amux-token header");
+        return res.end("unauthorized: append ?token=… or send an x-hivemux-token header");
       }
       if (req.method === "GET" && path === "/") {
         // Inject the token so the page's fetch/SSE calls carry it.
-        const page = PAGE.replace('"__AMUX_TOKEN__"', JSON.stringify(authToken ?? ""));
+        const page = PAGE.replace('"__HIVEMUX_TOKEN__"', JSON.stringify(authToken ?? ""));
         res.writeHead(200, { "content-type": "text/html" });
         return res.end(page);
       }

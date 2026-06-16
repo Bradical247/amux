@@ -12,12 +12,12 @@ import { startDaemon } from "./ipc/server";
 
 const program = new Command();
 program
-  .name("amux")
+  .name("hivemux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
   .version("1.0.0");
 
 function fail(msg: string): never {
-  console.error(`amux: ${msg}`);
+  console.error(`hivemux: ${msg}`);
   process.exit(1);
 }
 
@@ -54,7 +54,7 @@ program
   .description("spawn an agent in a fresh git worktree + tmux session")
   .option("-a, --agent <key>", "agent adapter to launch", "claude")
   .option("-r, --repo <path>", "repo to branch from (default: cwd)")
-  .option("-b, --branch <branch>", "branch name (default: amux/<name>)")
+  .option("-b, --branch <branch>", "branch name (default: hivemux/<name>)")
   .option("--base <ref>", "base ref for the new branch")
   .option("--cost-cap <usd>", "alert when estimated cost crosses this (USD)")
   .option("--ctx-cap <pct>", "alert when context fill crosses this (%)")
@@ -70,7 +70,7 @@ program
         ctxCap: opts.ctxCap ? Number(opts.ctxCap) : undefined,
       });
       console.log(
-        `✓ '${a.name}' [${a.agent}] on ${a.branch}\n  ${a.worktree}\n  attach: amux attach ${a.name}`,
+        `✓ '${a.name}' [${a.agent}] on ${a.branch}\n  ${a.worktree}\n  attach: hivemux attach ${a.name}`,
       );
     }),
   );
@@ -83,7 +83,7 @@ program
     guard(async () => {
       const agents = await mgr.list();
       if (agents.length === 0) {
-        console.log("no agents. start one: amux new <name>");
+        console.log("no agents. start one: hivemux new <name>");
         return;
       }
       printTable(agents);
@@ -116,13 +116,13 @@ program
 program
   .command("notify")
   .description("report status for an agent (call from agent hooks)")
-  .option("-n, --name <name>", "agent name (default: $AMUX_NAME)")
+  .option("-n, --name <name>", "agent name (default: $HIVEMUX_NAME)")
   .option("-s, --status <status>", "running | waiting | done | error", "waiting")
   .option("-m, --note <text>", "freeform note", "")
   .action((opts) =>
     guard(async () => {
-      const name = opts.name ?? process.env.AMUX_NAME;
-      if (!name) fail("no agent name (set $AMUX_NAME or pass --name)");
+      const name = opts.name ?? process.env.HIVEMUX_NAME;
+      if (!name) fail("no agent name (set $HIVEMUX_NAME or pass --name)");
       await mgr.notify(name, opts.status as Status, opts.note);
     }),
   );
@@ -234,7 +234,7 @@ program
       const port = Number(opts.port);
       const { token } = await startWeb(port, opts.host, opts.token);
       const q = token ? `?token=${token}` : "";
-      console.log(`amux web → http://${opts.host}:${port}/${q}`);
+      console.log(`hivemux web → http://${opts.host}:${port}/${q}`);
       if (token) console.log(`  auth token: ${token}`);
     }),
   );
@@ -255,9 +255,9 @@ program
           detached: true,
           stdio: "ignore",
         }).unref();
-        console.log(`amux gui → ${url}  (app window via ${browser})`);
+        console.log(`hivemux gui → ${url}  (app window via ${browser})`);
       } else {
-        console.log(`amux gui → open ${url}  (no Chromium/Chrome found for app mode)`);
+        console.log(`hivemux gui → open ${url}  (no Chromium/Chrome found for app mode)`);
       }
       console.log("  embedded terminals require ttyd on PATH");
     }),
@@ -296,7 +296,7 @@ program
 program
   .command("report-usage")
   .description("record an agent's token usage (call from agent hooks)")
-  .option("-n, --name <name>", "agent name (default: $AMUX_NAME)")
+  .option("-n, --name <name>", "agent name (default: $HIVEMUX_NAME)")
   .option("-m, --model <model>", "model id (for cost lookup)")
   .option("--in <n>", "input tokens", "0")
   .option("--out <n>", "output tokens", "0")
@@ -305,8 +305,8 @@ program
   .option("--ctx <n>", "current context tokens", "0")
   .action((opts) =>
     guard(async () => {
-      const name = opts.name ?? process.env.AMUX_NAME;
-      if (!name) fail("no agent name (set $AMUX_NAME or pass --name)");
+      const name = opts.name ?? process.env.HIVEMUX_NAME;
+      if (!name) fail("no agent name (set $HIVEMUX_NAME or pass --name)");
       await mgr.reportUsage(
         name,
         {
@@ -337,7 +337,7 @@ program
     guard(async () => {
       const { SOCKET_PATH } = await import("./ipc/protocol");
       await startDaemon();
-      console.log(`amux daemon listening on ${SOCKET_PATH}`);
+      console.log(`hivemux daemon listening on ${SOCKET_PATH}`);
     }),
   );
 
@@ -347,7 +347,7 @@ program
   .action(() =>
     guard(async () => {
       const client = await DaemonClient.tryConnect();
-      if (!client) fail("daemon not running (start it: amux daemon)");
+      if (!client) fail("daemon not running (start it: hivemux daemon)");
       await client.subscribe((e) => {
         const a = e.data as AgentView;
         console.log(`[${new Date().toLocaleTimeString()}] ${a.name}: ${a.status} ${a.note}`);

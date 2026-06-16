@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" fill="none" role="img" aria-label="amux">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" fill="none" role="img" aria-label="hivemux">
   <rect width="1280" height="640" fill="#0d1117"/>
   <rect x="2" y="2" width="1276" height="636" rx="24" stroke="#21262d" stroke-width="2"/>
 
@@ -19,7 +19,7 @@
     <path d="M92 112 l8 7 -8 7" stroke="#6e7681" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 
-  <text x="640" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="128" font-weight="700" fill="#e6edf3">amux</text>
+  <text x="640" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="128" font-weight="700" fill="#e6edf3">hivemux</text>
   <rect x="540" y="426" width="200" height="5" rx="2.5" fill="#3fb950"/>
   <text x="640" y="478" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="30" fill="#8b949e">tmux-backed orchestrator for parallel AI coding agents</text>
   <text x="640" y="528" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="22" fill="#6e7681">parallel agents · git worktrees · TUI · web · conflict detection · headless</text>

@@ -3,13 +3,13 @@
 // toolbar. Next-level create flow (live repo validation, repo picker, advanced
 // options, real creating-state) plus sound chimes, desktop notifications,
 // keyboard shortcuts, toasts, and a waiting-count title badge. Live over SSE.
-// `"__AMUX_TOKEN__"` is replaced server-side with the auth token (or "").
+// `"__HIVEMUX_TOKEN__"` is replaced server-side with the auth token (or "").
 export const PAGE = /* html */ `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>amux</title>
+<title>hivemux</title>
 <style>
   :root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--mut:#8b949e;
         --grn:#3fb950;--ylw:#d29922;--cyn:#39c5cf;--red:#f85149;--gry:#6e7681;--sel:#1f2937}
@@ -84,7 +84,7 @@ export const PAGE = /* html */ `<!doctype html>
 </head>
 <body>
 <aside class="side">
-  <div class="brand"><span class="dot" id="live"></span> amux <span id="count" style="color:var(--mut);font-weight:400;font-size:12px"></span>
+  <div class="brand"><span class="dot" id="live"></span> hivemux <span id="count" style="color:var(--mut);font-weight:400;font-size:12px"></span>
     <span class="sp"></span><button class="snd" id="snd" title="sound on/off">🔔</button></div>
   <button class="new" id="newbtn">+ new agent <span style="color:var(--mut)">(n)</span></button>
   <div class="list" id="list"></div>
@@ -119,7 +119,7 @@ export const PAGE = /* html */ `<!doctype html>
     </div>
     <span class="adv" id="advtoggle">▸ advanced (branch / base)</span>
     <div class="advbox" id="advbox">
-      <div class="field"><label>branch</label><input id="f_branch" placeholder="amux/<name>" autocomplete="off" /></div>
+      <div class="field"><label>branch</label><input id="f_branch" placeholder="hivemux/<name>" autocomplete="off" /></div>
       <div class="field"><label>base ref</label><input id="f_base" placeholder="(default)" autocomplete="off" /></div>
     </div>
     <div class="ferr" id="f_err"></div>
@@ -129,8 +129,8 @@ export const PAGE = /* html */ `<!doctype html>
 <div class="toasts" id="toasts"></div>
 
 <script>
-const TOKEN="__AMUX_TOKEN__";
-const AUTH=TOKEN?{'x-amux-token':TOKEN}:{};
+const TOKEN="__HIVEMUX_TOKEN__";
+const AUTH=TOKEN?{'x-hivemux-token':TOKEN}:{};
 const Q=TOKEN?('?token='+encodeURIComponent(TOKEN)):'';
 if(TOKEN&&location.search){history.replaceState(null,'',location.pathname);}
 function api(p,o){o=o||{};o.headers=Object.assign({},o.headers||{},AUTH);return fetch(p,o);}
@@ -141,7 +141,7 @@ const $=id=>document.getElementById(id);
 let agents=[],selected=null,conflicted=new Set(),prevStatus={},usage={};
 
 /* ---- sound + notifications ---- */
-let SOUND=localStorage.getItem('amux_sound')!=='off';
+let SOUND=localStorage.getItem('hivemux_sound')!=='off';
 let AC=null;
 const CHIME={waiting:[[660,.12],[880,.16]],done:[[880,.1],[1320,.18]],error:[[330,.2],[220,.26]],new:[[523,.08],[784,.14]]};
 function beep(seq){
@@ -155,7 +155,7 @@ function notify(title,body){
   try{if(window.Notification&&Notification.permission==='granted')new Notification(title,{body:body||'',silent:true});}catch(e){}
 }
 function arm(){ if(AC&&AC.state==='suspended')AC.resume(); if(window.Notification&&Notification.permission==='default')Notification.requestPermission(); }
-$('snd').onclick=()=>{SOUND=!SOUND;localStorage.setItem('amux_sound',SOUND?'on':'off');$('snd').textContent=SOUND?'🔔':'🔕';if(SOUND){arm();beep(CHIME.new);}};
+$('snd').onclick=()=>{SOUND=!SOUND;localStorage.setItem('hivemux_sound',SOUND?'on':'off');$('snd').textContent=SOUND?'🔔':'🔕';if(SOUND){arm();beep(CHIME.new);}};
 $('snd').textContent=SOUND?'🔔':'🔕';
 
 /* ---- toasts ---- */
@@ -263,14 +263,14 @@ function onSnapshot(list){
   list.forEach(a=>{
     const p=prevStatus[a.name];
     if(p&&p!==a.status){
-      if(a.status==='waiting'){beep(CHIME.waiting);notify('amux · '+a.name+' needs you',a.note);toast(a.name+' is waiting','warn');}
-      else if(a.status==='done'){beep(CHIME.done);notify('amux · '+a.name+' done',a.note);toast(a.name+' done','ok');}
-      else if(a.status==='error'){beep(CHIME.error);notify('amux · '+a.name+' error',a.note);toast(a.name+' error','err');}
+      if(a.status==='waiting'){beep(CHIME.waiting);notify('hivemux · '+a.name+' needs you',a.note);toast(a.name+' is waiting','warn');}
+      else if(a.status==='done'){beep(CHIME.done);notify('hivemux · '+a.name+' done',a.note);toast(a.name+' done','ok');}
+      else if(a.status==='error'){beep(CHIME.error);notify('hivemux · '+a.name+' error',a.note);toast(a.name+' error','err');}
     }
     prevStatus[a.name]=a.status;
   });
   const w=list.filter(a=>a.status==='waiting').length;
-  document.title=(w?'('+w+') ':'')+'amux';
+  document.title=(w?'('+w+') ':'')+'hivemux';
 }
 
 async function loadUsage(){
@@ -298,7 +298,7 @@ async function boot(){
     loadConflicts();onSnapshot(agents);
   });
   ev.addEventListener('alert',e=>{
-    const a=JSON.parse(e.data);beep(CHIME.error);notify('amux alert',a.text);toast(a.text,'err');loadUsage();
+    const a=JSON.parse(e.data);beep(CHIME.error);notify('hivemux alert',a.text);toast(a.text,'err');loadUsage();
   });
 }
 boot();

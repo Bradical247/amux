@@ -1,11 +1,11 @@
 {
-  "name": "amux-desktop",
+  "name": "hivemux-desktop",
   "version": "1.0.0",
-  "description": "amux — desktop app (Linux): parallel AI coding agents in a native window.",
+  "description": "hivemux — desktop app (Linux): parallel AI coding agents in a native window.",
   "main": "main.js",
   "license": "MIT",
   "author": "Conrad Bachman",
-  "homepage": "https://github.com/Bradical247/amux",
+  "homepage": "https://github.com/Bradical247/hivemux",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --linux AppImage deb --publish never"
@@ -15,11 +15,11 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "io.amux.desktop",
-    "productName": "amux",
+    "appId": "io.hivemux.desktop",
+    "productName": "hivemux",
     "files": ["main.js", "icon.png"],
     "extraResources": [
-      { "from": "resources/amux", "to": "amux" },
+      { "from": "resources/hivemux", "to": "hivemux" },
       { "from": "resources/ttyd", "to": "ttyd" }
     ],
     "linux": {

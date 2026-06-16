@@ -9,7 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import type { Agent } from "./types";
 
-const DIR = path.join(os.homedir(), ".amux");
+const DIR = path.join(os.homedir(), ".hivemux");
 const FILE = path.join(DIR, "state.json");
 const LOCK = `${FILE}.lock`;
 
@@ -41,7 +41,7 @@ async function withLock<T>(fn: () => Promise<T>): Promise<T> {
         } catch {
           /* lock vanished; retry */
         }
-        throw new Error("amux: state lock timeout");
+        throw new Error("hivemux: state lock timeout");
       }
       await sleep(20);
     }

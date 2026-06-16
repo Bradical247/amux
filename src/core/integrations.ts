@@ -1,7 +1,7 @@
 // Outbound integrations. Fired when an agent crosses a cost/context cap.
-// Configured in ~/.amux/config.json:
+// Configured in ~/.hivemux/config.json:
 //   { "integrations": { "slackWebhook": "https://hooks.slack.com/…",
-//                        "webhook": "https://example.com/amux" } }
+//                        "webhook": "https://example.com/hivemux" } }
 // Slack gets a {text} payload; the generic webhook gets {text, data}.
 import { readFile } from "node:fs/promises";
 import os from "node:os";
@@ -14,7 +14,7 @@ interface IntegrationConfig {
 
 async function config(): Promise<IntegrationConfig> {
   try {
-    const cfg = JSON.parse(await readFile(path.join(os.homedir(), ".amux", "config.json"), "utf8"));
+    const cfg = JSON.parse(await readFile(path.join(os.homedir(), ".hivemux", "config.json"), "utf8"));
     return (cfg.integrations ?? {}) as IntegrationConfig;
   } catch {
     return {};

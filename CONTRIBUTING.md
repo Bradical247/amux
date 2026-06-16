@@ -1,4 +1,4 @@
-# Contributing to amux
+# Contributing to hivemux
 
 ## Prerequisites
 
@@ -10,9 +10,9 @@
 ## Getting started
 
 ```bash
-git clone https://github.com/Bradical247/amux && cd amux
+git clone https://github.com/Bradical247/hivemux && cd hivemux
 bun install
-bun run build      # compile single standalone binary -> dist/amux
+bun run build      # compile single standalone binary -> dist/hivemux
 ```
 
 For development without a build step: `bun src/cli.ts <args>`.
@@ -29,7 +29,7 @@ CI mirrors `bun run check` + `bun run build`.
 
 ## Code standards
 
-amux follows cmux's TypeScript engineering conventions (see
+hivemux follows cmux's TypeScript engineering conventions (see
 `docs/cmux-standards-review.md` for the full mapping):
 
 - **Biome** for lint + format, `recommended` ruleset. No `// biome-ignore` without a reason.

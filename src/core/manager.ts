@@ -25,7 +25,7 @@ import { agentUsage } from "./usage";
 export class AmuxError extends Error {}
 
 function sessionName(name: string): string {
-  return `amux-${name}`;
+  return `hivemux-${name}`;
 }
 
 /** All agents enriched with live tmux liveness; dead sessions reported as "dead". */
@@ -58,11 +58,11 @@ export async function create(opts: NewAgentOpts): Promise<Agent> {
     throw new AmuxError("not inside a git repo (use --repo)");
   }
 
-  const branch = opts.branch ?? `amux/${opts.name}`;
+  const branch = opts.branch ?? `hivemux/${opts.name}`;
   const def = await resolveAgent(opts.agent);
   const worktree = await addWorktree(root, opts.name, branch, opts.base);
 
-  await newSession(session, worktree, { AMUX_NAME: opts.name }, def.cmd);
+  await newSession(session, worktree, { HIVEMUX_NAME: opts.name }, def.cmd);
   const agent: Agent = {
     name: opts.name,
     repo: root,
@@ -168,7 +168,7 @@ export async function openPr(name: string, opts: PrOpts = {}): Promise<string> {
   if (!(await ghAvailable())) throw new AmuxError("gh CLI not found (needed to open PRs)");
   await pushBranch(a.worktree, a.branch);
   const title = opts.title ?? a.branch;
-  const body = opts.body ?? `Opened by amux for agent '${a.name}'.`;
+  const body = opts.body ?? `Opened by hivemux for agent '${a.name}'.`;
   return createPR(a.worktree, title, body, Boolean(opts.draft));
 }
 
@@ -203,7 +203,7 @@ export async function checkRepo(dir: string): Promise<RepoCheck> {
   }
 }
 
-export const GRID_SESSION = "amux-grid";
+export const GRID_SESSION = "hivemux-grid";
 
 /** Build a tiled, read-only tmux view of all live agents; returns the live count. */
 export async function grid(): Promise<number> {
@@ -216,7 +216,7 @@ export async function grid(): Promise<number> {
   return live.length;
 }
 
-/** Record usage pushed by an agent hook (`amux report-usage`). */
+/** Record usage pushed by an agent hook (`hivemux report-usage`). */
 export async function reportUsage(
   name: string,
   raw: RawUsage,

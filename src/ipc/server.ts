@@ -43,7 +43,7 @@ export async function startDaemon(): Promise<net.Server> {
       const probe = net.connect(SOCKET_PATH).on("error", () => res());
       probe.on("connect", () => {
         probe.end();
-        rej(new Error(`amux daemon already running at ${SOCKET_PATH}`));
+        rej(new Error(`hivemux daemon already running at ${SOCKET_PATH}`));
       });
     });
     await unlink(SOCKET_PATH).catch(() => {});

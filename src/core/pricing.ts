@@ -1,9 +1,9 @@
 // Token pricing, provider-agnostic. All rates are USD per 1,000,000 tokens.
 // Built-in Anthropic rates are grounded against the Anthropic pricing reference
 // (cached 2026-06-04). Rates for ANY other model/provider (OpenAI, Gemini, …)
-// are supplied or overridden via ~/.amux/config.json:
+// are supplied or overridden via ~/.hivemux/config.json:
 //   { "pricing": { "gpt-5": { "in": 1.25, "out": 10, "context": 400000 } } }
-// amux ships no prices it can't cite; unknown models show cost as "—".
+// hivemux ships no prices it can't cite; unknown models show cost as "—".
 import { readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -34,7 +34,7 @@ const BUILTIN: Record<string, ModelPrice> = {
 
 function userPricing(): Record<string, ModelPrice> {
   try {
-    const cfg = JSON.parse(readFileSync(path.join(os.homedir(), ".amux", "config.json"), "utf8"));
+    const cfg = JSON.parse(readFileSync(path.join(os.homedir(), ".hivemux", "config.json"), "utf8"));
     return (cfg.pricing ?? {}) as Record<string, ModelPrice>;
   } catch {
     return {};

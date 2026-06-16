@@ -1,8 +1,8 @@
-// Per-agent token/cost/context observability. amux drives agents through tmux,
+// Per-agent token/cost/context observability. hivemux drives agents through tmux,
 // so it has no direct API usage — it reconstructs usage from two sources:
 //   1. transcript  — parse the agent CLI's own session log (zero setup).
 //                    Claude Code writes JSONL under ~/.claude/projects/<slug>/.
-//   2. push        — the agent self-reports via `amux report-usage` (a hook),
+//   2. push        — the agent self-reports via `hivemux report-usage` (a hook),
 //                    stored on the agent record. Agent-agnostic, any LLM.
 // Transcript wins when available; push is the fallback. Cost/context come from
 // the pricing table (see pricing.ts).

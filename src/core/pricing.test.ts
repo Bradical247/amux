@@ -35,7 +35,7 @@ describe("usage push-path", () => {
     const a: Agent = {
       name: "x",
       repo: "/nope",
-      worktree: "/nonexistent-amux-test-worktree-zzz",
+      worktree: "/nonexistent-hivemux-test-worktree-zzz",
       branch: "b",
       session: "s",
       agent: "claude",
