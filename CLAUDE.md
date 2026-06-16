@@ -38,9 +38,9 @@ trailing `getcwd` error when a test `rm -rf`s its own cwd is cosmetic, not a fai
 - `core/` is the **only** layer that touches tmux, git, or the store.
 - `core/manager.ts` is the **single orchestration path**. CLI, `ipc/` daemon,
   `web/`, and `tui/` are thin frontends that call it. Do not duplicate orchestration
-  logic into a frontend — add it to the core and expose it from each surface.
+  logic into a frontend; add it to the core and expose it from each surface.
 - The on-disk store (`~/.hivemux/state.json`) is the single source of truth. It is
-  concurrency-safe (atomic write + lock); preserve that — never do an unguarded
+  concurrency-safe (atomic write + lock); preserve that; never do an unguarded
   read-modify-write.
 
 ## Style
@@ -72,7 +72,7 @@ One release feeds four channels. To cut `vX.Y.Z`:
    runs an npm-publish job **gated on an `NPM_TOKEN` secret** (currently unset, so it
    no-ops).
 3. Manual follow-ups until that secret exists: update the Homebrew tap formula
-   (`Bradical247/homebrew-hivemux` — version, `/vX.Y.Z/` URLs, both `sha256`, the test
+   (`Bradical247/homebrew-hivemux`; version, `/vX.Y.Z/` URLs, both `sha256`, the test
    version), publish GitHub Packages (`@bradical247/hivemux`), and publish public npm.
    The npm package's postinstall downloads the `vX.Y.Z` release binary, so publish npm
    **after** the GitHub Release exists.
