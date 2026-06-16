@@ -6,6 +6,9 @@ All notable changes to hivemux are documented here. Format loosely follows
 ## [Unreleased]
 
 ### Added
+- **GUI runbook is now a visual manual** (`docs/GUI.md`): two annotated screenshots
+  (main window + loop modal) with numbered callouts keyed to the reference tables,
+  replacing the ASCII layout sketch.
 - **Playwright E2E** for the web GUI (`e2e/`, `bun run test:e2e`): boots a real
   `hivemux gui` against a temp `$HOME` with throwaway `shell` agents and drives it
   headlessly via system Chrome — load, sidebar, toolbar, tile grid, loop + MCP

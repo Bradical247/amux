@@ -23,22 +23,20 @@ If you run it on a remote box, forward the port and the GUI works the same:
 
 ## Layout
 
-```
-┌──────────────────────────────────────────────────────────┐
-│ ⬡ hivemux  (n)                                  [ sound ] │   header
-├───────────────┬──────────────────────────────────────────┤
-│ + new agent   │  [toolbar: broadcast … loop merge PR kill │
-│               │            fleet  MCP  prune  tile      ]  │
-│ ⬡ fix-auth    │                                            │
-│   working     │                                            │
-│   1.2k tok $.03│        embedded live terminal             │
-│ ⬡ add-tests   │        (ttyd) for the selected agent       │
-│   done        │                                            │
-│ ⬡ refactor    │                                            │
-│   commit/PR    │                                            │
-│   held [approve][deny]                                     │
-└───────────────┴──────────────────────────────────────────┘
-```
+<img src="../assets/gui-manual.png" alt="annotated hivemux GUI" width="900" />
+
+The numbered callouts above:
+
+| # | Region | What it is |
+|---|--------|------------|
+| 1 | **Brand + count** | the hive mark and live agent count; the hex dot glows green when the SSE stream is connected |
+| 2 | **sound** | toggle the finish chime + desktop notification |
+| 3 | **Workspace row** | one agent; click it to show its terminal in the main pane |
+| 4 | **Status ring** | the agent's state at a glance (colour legend below) |
+| 5 | **Approval hold** | `commit/PR held` with inline **approve** / **deny** (only when a loop is waiting on you) |
+| 6 | **Toolbar** | every action: loop, fleet, MCP, merge, PR, kill, prune (full table below) |
+| 7 | **tile** | toggle the tiled grid of all terminals |
+| 8 | **Main pane** | the selected agent's live terminal (embedded ttyd) |
 
 ### Header
 - **⬡ hivemux (n)**: the hive mark plus the live agent count. The hex dot glows
@@ -103,16 +101,21 @@ Everything the CLI and MCP server expose, driven from buttons.
 A loop drives an agent **verify → fix → verify** until the goal passes or it hits
 the iteration cap. Open it with **loop** (or **fleet** for the multi-agent form).
 
-| Control | Meaning |
-|---|---|
-| **goal** | what the agent should achieve, in plain language |
-| **check** | a shell verifier; exit 0 = pass (e.g. `bun test`). Preferred when you have one. |
-| **rubric** | LLM-judge criteria, used when there's no shell check (e.g. "all tests pass and lint is clean") |
-| **fleet size** | (fleet form) run the same goal on N fresh agents and race them |
-| **commit** | git commit on pass |
-| **PR** | open a pull request on pass |
-| **ponytail** | lazy-senior-dev mode: bias the agent toward the smallest solution |
-| **watch** | stream the agent's live reasoning into its terminal (see [Watch](#watch-mode)) |
+<img src="../assets/gui-manual-loop.png" alt="annotated loop modal" width="900" />
+
+| # | Control | Meaning |
+|---|---------|---------|
+| 1 | **goal** | what the agent should achieve, in plain language |
+| 2 | **verifier** | choose a shell **check** (exit 0 = pass) or an **LLM judge (rubric)** |
+| 3 | **shell check / rubric** | the check command (e.g. `bun test`), or the rubric text when the judge is selected |
+| 4 | **max iterations** | give up after this many verify→fix rounds |
+| 5 | **runner** | which agent CLI runs it (claude / a configured runner) |
+| 6 | **ponytail / watch** | ponytail = bias to the smallest fix; watch = stream the agent's reasoning into its pane (see [Watch](#watch-mode)) |
+| 7 | **start** | launch the loop in the background |
+
+`commit on pass` / `open PR on pass` (the two checkboxes left of ponytail) land the
+work automatically when the goal passes; the **fleet** form adds a **fleet size**
+field to run the same goal on N fresh agents and race them.
 
 **start** launches the loop in the background; the sidebar ring and cost update
 live as it iterates. **loop history** shows past loop runs; click one to read its
