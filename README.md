@@ -5,7 +5,10 @@
 ### A Linux-native, tmux-backed orchestrator for parallel AI coding agents.
 
 [![CI](https://github.com/Bradical247/hivemux/actions/workflows/ci.yml/badge.svg)](https://github.com/Bradical247/hivemux/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/hivemux?logo=npm&color=3fb950)](https://www.npmjs.com/package/hivemux)
+[![npm downloads](https://img.shields.io/npm/dm/hivemux?color=3fb950)](https://www.npmjs.com/package/hivemux)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fb950.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-555)
 ![Runtime: Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun&logoColor=black)
 ![Built on tmux](https://img.shields.io/badge/built%20on-tmux-1BB91F?logo=tmux&logoColor=white)
 

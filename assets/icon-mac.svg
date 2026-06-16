@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" role="img" aria-label="hivemux">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161b22"/>
+      <stop offset="1" stop-color="#0a0d12"/>
+    </linearGradient>
+  </defs>
+  <!-- macOS Big Sur tile: ~824px rounded square, centered, transparent margin -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <rect x="102" y="102" width="820" height="820" rx="183" fill="none" stroke="#30363d" stroke-width="4"/>
+  <!-- honeycomb mark (from icon.svg), centered + scaled into the tile -->
+  <g transform="translate(102.4,102.4) scale(1.6)">
+    <path d="M188.0,256.0L222.0,197.1L290.0,197.1L324.0,256.0L290.0,314.9L222.0,314.9Z" fill="#3fb950" fill-opacity="0.92" stroke="#3fb950" stroke-width="4"/>
+    <path d="M296.1,318.4L330.1,259.5L398.1,259.5L432.1,318.4L398.1,377.3L330.1,377.3Z" fill="#161b22" stroke="#30363d" stroke-width="4"/>
+    <path d="M296.1,193.6L330.1,134.7L398.1,134.7L432.1,193.6L398.1,252.5L330.1,252.5Z" fill="#3fb950" fill-opacity="0.92" stroke="#3fb950" stroke-width="4"/>
+    <path d="M79.9,318.4L113.9,259.5L181.9,259.5L215.9,318.4L181.9,377.3L113.9,377.3Z" fill="#161b22" stroke="#30363d" stroke-width="4"/>
+    <path d="M79.9,193.6L113.9,134.7L181.9,134.7L215.9,193.6L181.9,252.5L113.9,252.5Z" fill="#161b22" stroke="#30363d" stroke-width="4"/>
+    <path d="M188.0,380.8L222.0,322.0L290.0,322.0L324.0,380.8L290.0,439.7L222.0,439.7Z" fill="#3fb950" fill-opacity="0.92" stroke="#3fb950" stroke-width="4"/>
+    <path d="M188.0,131.2L222.0,72.3L290.0,72.3L324.0,131.2L290.0,190.0L222.0,190.0Z" fill="#161b22" stroke="#30363d" stroke-width="4"/>
+  </g>
+</svg>

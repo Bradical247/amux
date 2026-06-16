@@ -6,11 +6,17 @@ All notable changes to hivemux are documented here. Format loosely follows
 ## [1.5.0] — 2026-06-16
 
 ### Packaging
+- **npm**: published to the public registry — `npm i -g hivemux` / `npx hivemux`.
 - **Homebrew tap**: `brew install bradical247/hivemux/hivemux`
   ([Bradical247/homebrew-hivemux](https://github.com/Bradical247/homebrew-hivemux)).
 - **GitHub Packages**: `@bradical247/hivemux` on npm.pkg.github.com.
 - **npm package** (`publish/npm/`): a thin launcher whose postinstall fetches the
   prebuilt binary for the platform from the matching GitHub release.
+- **CI auto-publish**: `release.yml` now publishes to npm on every `v*` tag (gated
+  on an `NPM_TOKEN` secret; no-ops until set), version synced from the tag.
+- **macOS app icon**: a proper Big Sur squircle icon (`assets/icon-mac.svg/png`)
+  for the `.dmg` build, replacing the full-bleed Linux icon on mac.
+- README install badges (npm version + downloads, platform).
 
 ### Added
 - **GUI runbook is now a visual manual** (`docs/GUI.md`): two annotated screenshots

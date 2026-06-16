@@ -77,3 +77,31 @@ jobs:
           files: |
             electron/dist/*.dmg
             hivemux-macos-arm64
+
+  npm:
+    # Publishes the thin launcher package to npm. Runs after the GitHub release
+    # exists (its postinstall downloads the binary from that release). No-ops
+    # safely until an NPM_TOKEN secret is set.
+    needs: [linux, mac]
+    runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+      - name: Publish to npm
+        if: ${{ env.NPM_TOKEN != '' }}
+        working-directory: publish/npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
+          npm publish --access public
+      - name: Skipped (no NPM_TOKEN)
+        if: ${{ env.NPM_TOKEN == '' }}
+        run: |
+          echo "NPM_TOKEN secret not set; skipping npm publish."
+          echo "Add it with: gh secret set NPM_TOKEN"
