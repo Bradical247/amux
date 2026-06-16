@@ -211,7 +211,7 @@ async function agentTurn(
       })
     : { bin: adapter.bin, args };
   // A depleted ANTHROPIC_API_KEY can shadow a working login — drop it for the turn.
-  const env = { ...process.env };
+  const env = { ...process.env, ...adapter.env };
   delete env.ANTHROPIC_API_KEY;
   if (streaming && liveFile)
     return streamTurn(w.bin, w.args, { cwd: worktree, env }, liveFile, claudeJson);
@@ -251,9 +251,10 @@ export async function verifyRubric(
   }
   const prompt = `You are a strict grader. Reply with PASS or FAIL on the first line, then one sentence why.\n\nGOAL:\n${goal}\n\nRUBRIC:\n${rubric}\n\nAGENT'S DIFF (truncated):\n${diff.slice(0, 8000)}`;
   try {
-    const env = { ...process.env };
+    const jadapter = resolveRunner(runner);
+    const env = { ...process.env, ...jadapter.env };
     delete env.ANTHROPIC_API_KEY;
-    const { stdout } = await pexec(resolveRunner(runner).bin, ["-p", prompt], {
+    const { stdout } = await pexec(jadapter.bin, ["-p", prompt], {
       cwd: worktree,
       env,
       timeout: 120_000,

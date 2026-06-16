@@ -3,6 +3,23 @@
 All notable changes to hivemux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [1.4.1]
+
+### Added
+- **Per-runner `env`**: a runner in `~/.hivemux/config.json` can now carry an
+  `env` map merged into the agent process environment. Handy to pin a runner to a
+  separate login, e.g. override the built-in `claude` with
+  `"env": { "CLAUDE_CONFIG_DIR": "/path/to/.claude-work" }` so the fleet
+  authenticates with a dedicated account.
+- **GUI runbook** (`docs/GUI.md`): documents every control in the `hivemux gui`
+  window (header, sidebar status rings, toolbar, new-agent/loop forms, watch mode,
+  tile view, approvals, MCP panel, troubleshooting).
+
+### Changed
+- **Demo GIF** now records a real Claude agent: it watches the agent reason live
+  (`--watch`), fix a planted bug, and drive the verifier to green, then shows the
+  one-line diff. The tape is reproducible (`demo/hivemux.tape` + `demo/setup-repo.sh`).
+
 ## [1.4.0]
 
 ### Added

@@ -1,7 +1,7 @@
 # hivemux, usage guide / runbook
 
-Task-oriented recipes. For the command reference see the README; for design notes
-see `docs/`.
+Task-oriented recipes. For the command reference see the README; for the GUI see
+the [GUI runbook](GUI.md); for design notes see `docs/`.
 
 ## Install
 

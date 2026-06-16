@@ -7,6 +7,16 @@
 //       "codex":  { "bin": "codex", "args": ["exec", "{prompt}"], "parse": "text" }
 //   } }
 //
+// An optional "env" map is merged into the runner's environment — handy to pin a
+// separate login, e.g. override the built-in claude to a dedicated config dir:
+//
+//   { "runners": {
+//       "claude": { "bin": "claude",
+//                   "args": ["-p","{prompt}","--output-format","json","--permission-mode","acceptEdits"],
+//                   "resumeArgs": ["--resume","{resume}"], "parse": "claude-json",
+//                   "env": { "CLAUDE_CONFIG_DIR": "/home/me/.claude-work" } }
+//   } }
+//
 // "{prompt}" and "{resume}" placeholders are substituted. parse "claude-json"
 // reads claude's JSON envelope (cost/session/usage); "text" treats stdout as the
 // result (cost via the pricing table if the model is known, else unpriced).
@@ -19,6 +29,7 @@ export interface RunnerAdapter {
   args: string[]; // may contain "{prompt}"
   resumeArgs?: string[]; // appended (with "{resume}") to continue a session
   parse: "claude-json" | "text";
+  env?: Record<string, string>; // extra env for the runner (e.g. CLAUDE_CONFIG_DIR)
 }
 
 const BUILTIN: Record<string, RunnerAdapter> = {

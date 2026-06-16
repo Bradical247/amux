@@ -100,7 +100,8 @@ adds the agent-specific concerns on top:
 form + loop/fleet/MCP controls), `gui` (cmux-style desktop window), `daemon`,
 `watch`, `mcp` (MCP server).
 
-New here? Read the [usage guide / runbook](docs/GUIDE.md) for task-oriented recipes.
+New here? Read the [usage guide / runbook](docs/GUIDE.md) for task-oriented recipes,
+or the [GUI runbook](docs/GUI.md) for what every control in the `hivemux gui` window does.
 
 ## Commands
 
