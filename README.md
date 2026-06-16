@@ -28,8 +28,9 @@ attach to from anywhere**.
 ## Features
 
 - 🔁 **Loop engineering** — `hivemux loop <name> --goal … --check "bun test"` drives an
-  agent through **iterate → verify → fix** cycles until the check passes (or it hits a
-  max-iter / cost / context cap). Verifier = a shell check *or* an LLM judge (`--rubric`).
+  agent **headless** (`claude -p`, one-shot per iteration) through **iterate → verify → fix**
+  cycles until the check passes (or it hits a max-iter / cost cap), with exact per-iteration
+  cost. Verifier = a shell check *or* an LLM judge (`--rubric`).
   `--fleet N` runs the same goal on N agents at once; `--commit`/`--pr` land it on pass.
   This is the bit the other tmux runners don't have: agents that **finish the job
   unattended, gated by a real check**.

@@ -3,6 +3,19 @@
 All notable changes to hivemux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [1.1.1]
+
+### Changed
+- **Loop driver rebuilt to run agents headless** via `claude -p --output-format json`
+  (one-shot per iteration) instead of typing into an interactive REPL + Stop hook.
+  Robust (no REPL-readiness/TUI fragility, no hook), exact per-iteration cost from
+  the JSON, context carried across iterations via `--resume`. **Validated live** on
+  this repo — a real agent created and verified a file in one iteration ($0.24).
+
+### Fixed
+- Agents inheriting a depleted `ANTHROPIC_API_KEY` that shadows a working login —
+  the loop runner unsets it before invoking the agent.
+
 ## [1.1.0]
 
 ### Added

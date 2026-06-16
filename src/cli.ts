@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name("hivemux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
-  .version("1.1.0");
+  .version("1.1.1");
 
 function fail(msg: string): never {
   console.error(`hivemux: ${msg}`);
@@ -207,7 +207,6 @@ program
   .option("--max <n>", "max iterations", "10")
   .option("--commit", "git commit on pass")
   .option("--pr", "open a GitHub PR on pass (needs gh)")
-  .option("--install-hook", "install the Claude Code done-signal hook in the worktree")
   .option("--fleet <n>", "run the same goal on N agents (name = base)")
   .option("-a, --agent <key>", "agent adapter for --fleet", "claude")
   .option("-r, --repo <path>", "repo for --fleet (default: cwd)")
@@ -223,7 +222,6 @@ program
       const lopts = {
         commit: Boolean(opts.commit),
         pr: Boolean(opts.pr),
-        installHook: Boolean(opts.installHook),
       };
       const log = (m: string) => console.log(m);
       if (opts.fleet) {
