@@ -4,7 +4,7 @@ A review of how cmux (`manaflow-ai/cmux`) is built, and how hivemux was brought 
 line with its **engineering** standards. cmux is ~2,700 files of Swift (a native
 macOS app) plus a large TypeScript surface (`web/`, `webviews/`, `workers/`,
 `CLI` socket clients). hivemux is pure TypeScript/Node, so only cmux's TS/tooling and
-cross-cutting engineering conventions apply — the Swift/SwiftUI/Ghostty rules do not.
+cross-cutting engineering conventions apply, the Swift/SwiftUI/Ghostty rules do not.
 
 ## What cmux's standard actually is (observed in-repo)
 
@@ -50,17 +50,17 @@ Gates now: `npm run check` = `tsc --noEmit` + `biome check`, both clean; `npm ru
 
 1. **Formatter ON.** cmux disabled Biome's formatter to avoid churn against legacy
    lint debt. hivemux is greenfield with zero debt, so we enable formatter + import
-   organization now — it's the direction cmux's `CONTRIBUTING.md` says it wants to
+   organization now, it's the direction cmux's `CONTRIBUTING.md` says it wants to
    go once debt is paid.
-2. ~~Node runtime, not Bun.~~ **RESOLVED — Bun adopted.** hivemux now matches cmux's
+2. ~~Node runtime, not Bun.~~ **RESOLVED, Bun adopted.** hivemux now matches cmux's
    stack: Bun runtime, `bun test`, `moduleResolution: bundler`, bare relative
    imports (no `.js`), and single-binary distribution via `bun build --compile` (a
-   91 MB self-contained executable — arguably a *better* distribution story than
+   91 MB self-contained executable, arguably a *better* distribution story than
    cmux's macOS `.dmg`, since the target needs nothing installed). One environment
    caveat: on Conrad's box the working copy must live at `~/hivemux`, not `~/Projects`,
    because the lowercase `~/projects → ~/suse-projects` symlink confuses Bun's
    bundler. See `CLAUDE.md`.
-3. **License: MIT (current) vs cmux GPL-3.0-or-later.** Not an engineering call —
+3. **License: MIT (current) vs cmux GPL-3.0-or-later.** Not an engineering call,
    left to the maintainer. *Open question.*
 
 ## Not applicable (Swift/macOS-only)

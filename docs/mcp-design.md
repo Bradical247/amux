@@ -1,12 +1,12 @@
-# MCP integration — design exploration
+# MCP integration, design exploration
 
-Goal: make hivemux the **execution layer for AI workflows** — a conductor agent
+Goal: make hivemux the **execution layer for AI workflows**: a conductor agent
 (in Claude Code / Desktop / Cursor) drives a fleet of hivemux worker agents over
 MCP, each verified, tool-equipped, and cost-capped.
 
 Two directions (build A first, B alongside):
-- **A. hivemux as an MCP server** (`hivemux mcp`) — exposes orchestration as tools.
-- **B. per-agent MCP provisioning** — workers inherit MCP tools automatically.
+- **A. hivemux as an MCP server** (`hivemux mcp`), exposes orchestration as tools.
+- **B. per-agent MCP provisioning**: workers inherit MCP tools automatically.
 
 ---
 
@@ -47,11 +47,11 @@ Few, composable, LLM-ergonomic tools. Structured JSON returns.
 | Tool | Params | Returns | Notes |
 |---|---|---|---|
 | `spawn_agent` | repo, agent?, name?, cost_cap?, mcp? | {name, branch, worktree} | creates worktree + agent |
-| `start_loop` | name? \| (base+fleet), goal, check? \| rubric?, max?, commit?, pr? | {loop_id, names[]} | **non-blocking** — returns immediately |
+| `start_loop` | name? \| (base+fleet), goal, check? \| rubric?, max?, commit?, pr? | {loop_id, names[]} | **non-blocking**: returns immediately |
 | `get_status` | name? | [{name, status, loop:{iter,state}, cost, ctxPct}] | poll this for progress |
-| `list_agents` | — | [{name, status, branch, alive}] | |
-| `usage` | — | [{name, model, tokens, costUSD}] + total | |
-| `conflicts` | — | [{file, agents[]}] | merge-collision gate |
+| `list_agents` |, | [{name, status, branch, alive}] | |
+| `usage` |, | [{name, model, tokens, costUSD}] + total | |
+| `conflicts` |, | [{file, agents[]}] | merge-collision gate |
 | `merge` | name, into? | {merged, into, conflicts[]} | |
 | `kill` | name, rm_worktree? | {ok} | |
 | `broadcast` | names[]?, text | {sent[]} | |
@@ -71,12 +71,12 @@ for a multi-minute loop is fragile (client timeouts, no progress).
 - `start_loop` launches the loop **in a background runner** and returns a `loop_id`
   immediately.
 - The conductor polls `get_status` (loop iter/state/cost) until terminal.
-- This needs a **background loop runner** — the `hivemux daemon` owns running loops
+- This needs a **background loop runner**: the `hivemux daemon` owns running loops
   (today loops run in the foreground `hivemux loop` process). So: MCP server →
   daemon → detached loop execution → status in the store the dashboard already reads.
 
 Implication: building A well means **moving loop execution into the daemon** (a real
-but worthwhile refactor — it also lets the web dashboard show/stop running loops).
+but worthwhile refactor, it also lets the web dashboard show/stop running loops).
 
 ---
 

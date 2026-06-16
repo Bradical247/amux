@@ -20,7 +20,7 @@ For development without a build step: `bun src/cli.ts <args>`.
 ## Checks (run before every PR)
 
 ```bash
-bun run check      # tsc --noEmit + biome check + bun test  — all must be clean
+bun run check      # tsc --noEmit + biome check + bun test , all must be clean
 bun run lint:fix   # auto-fix lint + organize imports
 bun run format     # format src/
 ```
@@ -38,7 +38,7 @@ hivemux follows cmux's TypeScript engineering conventions (see
 - **kebab-case** filenames; `SCREAMING_SNAKE` module constants; `60_000` numeric separators.
 - Every source file opens with a `//` header explaining **why it exists**, not just what it does.
 - **One shared path per behavior.** Every frontend (CLI, daemon, web, TUI) calls
-  `core/manager.ts`. Never duplicate orchestration logic into a frontend — extend the core.
+  `core/manager.ts`. Never duplicate orchestration logic into a frontend, extend the core.
 
 ## Tests
 

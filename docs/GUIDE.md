@@ -1,4 +1,4 @@
-# hivemux — usage guide / runbook
+# hivemux, usage guide / runbook
 
 Task-oriented recipes. For the command reference see the README; for design notes
 see `docs/`.
@@ -14,7 +14,7 @@ Needs `tmux >= 3.2`, `git`, and the agent CLIs you drive (`claude`, …).
 
 ---
 
-## Recipe 1 — run a few agents by hand
+## Recipe 1, run a few agents by hand
 
 ```bash
 cd ~/your-repo
@@ -27,7 +27,7 @@ hivemux merge fix-auth               # land it
 hivemux kill fix-auth --rm-worktree
 ```
 
-## Recipe 2 — let an agent finish the job (loop engineering)
+## Recipe 2, let an agent finish the job (loop engineering)
 
 ```bash
 hivemux new bugfix
@@ -40,7 +40,7 @@ The agent iterates **verify → fix** until `--check` exits 0 (or it hits `--max
 or a cost cap). On pass it commits. Use `--rubric "…"` instead of `--check` for an
 LLM-judge verifier. `--runner gemini` (etc.) to use a different agent CLI.
 
-Detached / survives disconnect (needs the daemon running — see Recipe 5):
+Detached / survives disconnect (needs the daemon running, see Recipe 5):
 ```bash
 hivemux daemon &                     # once
 hivemux loop bugfix --goal "…" --check "…" --detach
@@ -49,7 +49,7 @@ hivemux loop-log bugfix              # per-iteration history (cost, pass/fail)
 hivemux loop-stop bugfix             # cancel it
 ```
 
-## Recipe 3 — fan out a fleet on the same goal
+## Recipe 3, fan out a fleet on the same goal
 
 ```bash
 hivemux loop refactor --fleet 3 \
@@ -58,7 +58,7 @@ hivemux loop refactor --fleet 3 \
 # 3 isolated agents, each its own worktree; merge whichever passes.
 ```
 
-## Recipe 4 — overnight, budget-bounded
+## Recipe 4, overnight, budget-bounded
 
 ```bash
 hivemux daemon &
@@ -71,7 +71,7 @@ hivemux web &                          # watch from a browser tomorrow
 Loops survive your disconnect; each stops at its cost cap. Check `hivemux usage`
 or the dashboard in the morning.
 
-## Recipe 5 — watch / control from the dashboard
+## Recipe 5, watch / control from the dashboard
 
 ```bash
 hivemux web --port 7878               # browser dashboard (loopback)
@@ -82,7 +82,7 @@ Live agent grid + embedded terminals, per-agent tokens/cost/context, conflict
 panel, and **loop control** (start/stop a loop, watch iterations). Exposed beyond
 loopback (`--host 0.0.0.0`) it auto-mints an auth token.
 
-## Recipe 6 — drive a fleet from a conductor agent (MCP)
+## Recipe 6, drive a fleet from a conductor agent (MCP)
 
 ```bash
 claude mcp add hivemux -- hivemux mcp
@@ -114,10 +114,10 @@ Loop history: `~/.hivemux/loops/<name>.jsonl`.
 
 ## Troubleshooting
 
-- **Agent fails immediately** — a stale `ANTHROPIC_API_KEY` can shadow a working
+- **Agent fails immediately**: a stale `ANTHROPIC_API_KEY` can shadow a working
   login; the loop runner unsets it, but for interactive agents `unset ANTHROPIC_API_KEY`
   or use a `runners`/`agents` entry that does (`env -u ANTHROPIC_API_KEY …`).
-- **Dead agents linger** — `hivemux prune` (add `--rm-worktree` to drop worktrees).
-- **Embedded terminals blank in the GUI** — install `ttyd` and ensure it's on PATH.
-- **Loop never finishes** — check `hivemux loop-log <name>`; tighten the `--check`
+- **Dead agents linger**: `hivemux prune` (add `--rm-worktree` to drop worktrees).
+- **Embedded terminals blank in the GUI**: install `ttyd` and ensure it's on PATH.
+- **Loop never finishes**: check `hivemux loop-log <name>`; tighten the `--check`
   or lower `--max`.
