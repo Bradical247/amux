@@ -41,7 +41,7 @@ cd ~/your-repo
 hivemux new fix-auth                 # worktree + tmux session, launches the agent
 hivemux loop fix-auth \              # iterate -> verify -> fix until the check passes
   --goal "make the failing test pass" --check "bun test" --watch
-hivemux gui                          # or drive the whole fleet from a browser
+hivemux                              # bare hivemux opens the GUI (same as `hivemux gui`)
 ```
 
 <p align="center"><img src="assets/demo.gif" alt="hivemux loop fixing a bug to green" width="820" /></p>
@@ -131,6 +131,7 @@ hivemux loop-list / loop-stop <name> / loop-log <name>   # manage detached loops
 hivemux dash                            # live full-screen TUI (status table)
 hivemux grid                            # tiled, read-only live view of all agents
 hivemux web [--port 7878] [--host 0.0.0.0] [--token t]   # web dashboard, SSE live updates
+hivemux                                 # bare invocation = gui (the default action)
 hivemux gui [--port 7878]               # cmux-style desktop app window (needs ttyd + a browser)
 hivemux daemon                          # control-plane daemon (event push, remote API)
 hivemux watch                           # stream live status from the daemon

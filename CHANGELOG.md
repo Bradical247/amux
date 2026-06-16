@@ -3,6 +3,12 @@
 All notable changes to hivemux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [1.6.0]
+
+### Changed
+- **Bare `hivemux` now opens the GUI** (the default action), same as `hivemux gui`.
+  `hivemux --help`/`-h` still prints help; every subcommand is unchanged.
+
 ## [1.5.0] — 2026-06-16
 
 ### Packaging

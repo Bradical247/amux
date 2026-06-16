@@ -16,7 +16,7 @@ import type { AgentView, Status } from "./core/types";
 import { DaemonClient } from "./ipc/client";
 import { startDaemon } from "./ipc/server";
 
-const VERSION = "1.5.0";
+const VERSION = "1.6.0";
 
 /** ASCII honeycomb mark. Green only when stdout is a TTY (keeps pipes clean). */
 function banner(): string {
@@ -410,29 +410,29 @@ program
     }),
   );
 
+/** Start the web server and open it as a desktop app window. */
+async function launchGui(port: number): Promise<void> {
+  const { startWeb } = await import("./web/server");
+  await startWeb(port, "127.0.0.1");
+  const url = `http://127.0.0.1:${port}/`;
+  const browser = findBrowser();
+  if (browser) {
+    spawn(browser, [`--app=${url}`, "--new-window"], {
+      detached: true,
+      stdio: "ignore",
+    }).unref();
+    console.log(`hivemux gui → ${url}  (app window via ${browser})`);
+  } else {
+    console.log(`hivemux gui → open ${url}  (no Chromium/Chrome found for app mode)`);
+  }
+  console.log("  embedded terminals require ttyd on PATH");
+}
+
 program
   .command("gui")
-  .description("open the dashboard as a desktop app window (cmux-style)")
+  .description("open the dashboard as a desktop app window (cmux-style) [default]")
   .option("-p, --port <port>", "port", "7878")
-  .action((opts) =>
-    guard(async () => {
-      const { startWeb } = await import("./web/server");
-      const port = Number(opts.port);
-      await startWeb(port, "127.0.0.1");
-      const url = `http://127.0.0.1:${port}/`;
-      const browser = findBrowser();
-      if (browser) {
-        spawn(browser, [`--app=${url}`, "--new-window"], {
-          detached: true,
-          stdio: "ignore",
-        }).unref();
-        console.log(`hivemux gui → ${url}  (app window via ${browser})`);
-      } else {
-        console.log(`hivemux gui → open ${url}  (no Chromium/Chrome found for app mode)`);
-      }
-      console.log("  embedded terminals require ttyd on PATH");
-    }),
-  );
+  .action((opts) => guard(() => launchGui(Number(opts.port))));
 
 program
   .command("mcp")
@@ -594,8 +594,10 @@ function printTable(agents: AgentView[]): void {
   for (const a of agents) console.log(line(cols.map(([, f]) => f(a))));
 }
 
+// Bare `hivemux` (no subcommand) launches the GUI. `hivemux --help` / `-h` still
+// shows help; every subcommand still works.
 if (process.argv.length <= 2) {
-  program.outputHelp();
-  process.exit(0);
+  guard(() => launchGui(7878));
+} else {
+  program.parseAsync(process.argv);
 }
-program.parseAsync(process.argv);
