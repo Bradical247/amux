@@ -28,12 +28,12 @@ across disconnects, and lives on a remote box you attach to from anywhere.
 
 ## Features
 
-- **MCP server**: `hivemux mcp` exposes the orchestration as MCP tools, so a
+- 🔌 **MCP server**: `hivemux mcp` exposes the orchestration as MCP tools, so a
   conductor agent (Claude Code/Desktop, Cursor) drives a hivemux fleet
   conversationally: *"fan out 3 agents on these bugs, loop each until tests pass,
   $3 cap, merge the greens."* spawn / loop / status / merge / kill over MCP, with
   per-agent cost caps and a concurrency limit by default.
-- **Loop engineering**: `hivemux loop <name> --goal … --check "bun test"` drives an
+- 🔁 **Loop engineering**: `hivemux loop <name> --goal … --check "bun test"` drives an
   agent headless (one-shot per iteration) through iterate → verify → fix cycles
   until the check passes, or it hits a max-iteration or cost cap, with exact
   per-iteration cost. The verifier is a shell check or an LLM judge (`--rubric`).
@@ -42,35 +42,35 @@ across disconnects, and lives on a remote box you attach to from anywhere.
   agents at once; `--commit` / `--pr` land it on pass. `--ponytail` flips the agent
   into lazy-senior-dev mode (smallest solution that works), via
   [Ponytail](https://github.com/DietrichGebert/ponytail).
-- **Desktop GUI**: `hivemux gui` opens a cmux-style app window: a sidebar of agent
+- 🖥️ **Desktop GUI**: `hivemux gui` opens a cmux-style app window: a sidebar of agent
   workspaces (status + notification rings) and an embedded live terminal per agent
   (via [ttyd](https://github.com/tsl0922/ttyd)). The toolbar drives the full feature
   set (loop, fleet, MCP setup, merge, PR, broadcast, prune, kill), plus a loop-history
   viewer and live usage.
-- **Parallel agents, fully isolated**: each agent runs in its own git worktree
+- 🐝 **Parallel agents, fully isolated**: each agent runs in its own git worktree
   (its own branch, no file collisions) and its own tmux session.
-- **Headless and remote-first**: tmux-backed, so it runs over SSH on a server, the
+- 🛰️ **Headless and remote-first**: tmux-backed, so it runs over SSH on a server, the
   agents survive disconnects, and you reattach from anywhere.
-- **Many ways to watch**: an `hivemux ls` table, a live TUI (`hivemux dash`), a tiled
+- 📊 **Many ways to watch**: an `hivemux ls` table, a live TUI (`hivemux dash`), a tiled
   terminal view (`hivemux grid`), and a remote-reachable web dashboard (`hivemux web`).
-- **Conflict detection**: surfaces files touched by more than one agent before you
+- ⚠️ **Conflict detection**: surfaces files touched by more than one agent before you
   merge, in the CLI and both dashboards.
-- **Usage and cost observability**: per-agent token counts, estimated cost, and
+- 💰 **Usage and cost observability**: per-agent token counts, estimated cost, and
   context-window fill (`hivemux usage` and the dashboards). Anthropic rates ship
   grounded; any other LLM is priced via `~/.hivemux/config.json`. Set `--cost-cap` /
   `--ctx-cap` for a chime and a Slack/webhook alert when an agent crosses it.
-- **Merge and PR orchestration**: `hivemux merge` lands a branch (clean-aborts on
+- 🔀 **Merge and PR orchestration**: `hivemux merge` lands a branch (clean-aborts on
   conflict); `hivemux pr` pushes and opens a GitHub PR.
-- **Broadcast**: `hivemux broadcast` types the same prompt into many agents at once.
-- **Status notifications**: agents report `waiting` / `done` / `error` via
+- 📣 **Broadcast**: `hivemux broadcast` types the same prompt into many agents at once.
+- 🔔 **Status notifications**: agents report `waiting` / `done` / `error` via
   `hivemux notify` (wire it into agent hooks); a daemon pushes live events to every client.
-- **Authenticated when exposed**: the web dashboard auto-mints a token the moment it
+- 🔒 **Authenticated when exposed**: the web dashboard auto-mints a token the moment it
   binds beyond loopback.
-- **Sandboxed agents and governance**: looped agents run under an OS sandbox (bwrap on
+- 🛡️ **Sandboxed agents and governance**: looped agents run under an OS sandbox (bwrap on
   Linux, seatbelt on macOS) confined to their worktree, so a headless `acceptEdits` agent
   can't write outside it. A `policy` block governs sandbox, network, a hard cost ceiling,
   and `requireApproval` (hold commit/PR for `hivemux approve`). `hivemux doctor` checks it all.
-- **Single-binary distribution**: `bun build --compile` produces one self-contained
+- 📦 **Single-binary distribution**: `bun build --compile` produces one self-contained
   executable; the target machine needs nothing installed.
 
 ## Why tmux as the base
