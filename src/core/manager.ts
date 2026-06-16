@@ -81,6 +81,16 @@ export async function create(opts: NewAgentOpts): Promise<Agent> {
   return agent;
 }
 
+/** Remove agents whose tmux session is gone (optionally their worktrees too). */
+export async function prune(rmWorktree = false): Promise<string[]> {
+  const dead = (await list()).filter((v) => !v.alive);
+  for (const d of dead) {
+    if (rmWorktree) await removeWorktree(d.repo, d.worktree).catch(() => {});
+    await store.remove(d.name);
+  }
+  return dead.map((d) => d.name);
+}
+
 export async function kill(name: string, rmWorktree = false): Promise<void> {
   const a = await store.get(name);
   if (!a) throw new AmuxError(`unknown agent '${name}'`);

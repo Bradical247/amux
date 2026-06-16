@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name("amux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
-  .version("0.7.0");
+  .version("0.7.1");
 
 function fail(msg: string): never {
   console.error(`amux: ${msg}`);
@@ -124,6 +124,17 @@ program
       const name = opts.name ?? process.env.AMUX_NAME;
       if (!name) fail("no agent name (set $AMUX_NAME or pass --name)");
       await mgr.notify(name, opts.status as Status, opts.note);
+    }),
+  );
+
+program
+  .command("prune")
+  .description("remove agents whose tmux session is gone")
+  .option("--rm-worktree", "also remove their git worktrees")
+  .action((opts) =>
+    guard(async () => {
+      const removed = await mgr.prune(Boolean(opts.rmWorktree));
+      console.log(removed.length ? `✓ pruned: ${removed.join(", ")}` : "nothing to prune");
     }),
   );
 

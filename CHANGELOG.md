@@ -3,6 +3,16 @@
 All notable changes to amux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [0.7.1]
+
+### Added
+- `amux prune` — remove agents whose tmux session is gone (`--rm-worktree` to drop
+  their worktrees too). Surfaced by a dogfood pass that left an orphaned session.
+
+### Verified
+- The Claude Code transcript parser was validated against the real `~/.claude`
+  JSONL format and directory layout (fields, cost math, context %).
+
 ## [0.7.0]
 
 ### Added
