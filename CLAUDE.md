@@ -17,14 +17,21 @@ bun run build           # compile single standalone binary -> dist/hivemux
 Always run and keep clean:
 
 ```bash
-bun run check           # tsc --noEmit + biome check + bun test
+bun run check           # tsc --noEmit + biome check + bun test src (unit only)
 bun run build
 ```
 
-For anything touching the daemon/web/TUI, also smoke-test the runtime path you
-changed (spawn an agent with `--agent shell` in a throwaway git repo, exercise the
-command, tear it down). The trailing `getcwd` error when a test `rm -rf`s its own
-cwd is cosmetic, not a failure.
+For anything touching the **web/GUI**, also run the Playwright E2E (it boots a real
+`hivemux gui` against a temp $HOME with throwaway `shell` agents):
+
+```bash
+bun run build && bun run test:e2e   # needs tmux + ttyd + system Chrome
+```
+
+`bun test` is scoped to `src/` so it won't pick up the `e2e/` specs (which use the
+Playwright runner). For non-GUI runtime changes, still smoke-test by hand (spawn an
+agent with `--agent shell` in a throwaway dir, exercise it, tear it down). The
+trailing `getcwd` error when a test `rm -rf`s its own cwd is cosmetic, not a failure.
 
 ## Architecture rules
 
@@ -45,8 +52,32 @@ cwd is cosmetic, not a failure.
 
 ## Tests
 
-- Colocate `*.test.ts`. Regression fixes use the two-commit red→green structure
-  (failing test first, then the fix) so CI proves the test catches the bug.
+- Colocate unit `*.test.ts` under `src/`. Regression fixes use the two-commit
+  red→green structure (failing test first, then the fix) so CI proves it catches the bug.
+- Web/GUI behaviour is covered by Playwright specs in `e2e/*.e2e.ts`; keep them
+  passing and add a case when you add a GUI surface.
+- Tests must be hermetic: they read `~/.hivemux/config.json` via `os.homedir()`, so
+  pin config-dependent assertions (point `$HOME` at a temp dir, or assert exported
+  constants like `agents.DEFAULTS` directly) rather than the developer's live config.
+- The Anthropic pricing table is locked by `pricing.test.ts`; change a rate there and
+  in `pricing.ts` together, or CI fails.
+
+## Releasing
+
+One release feeds four channels. To cut `vX.Y.Z`:
+
+1. Bump the version in `package.json`, `electron/package.json`, `publish/npm/package.json`,
+   `src/cli.ts`, and `src/ipc/mcp.ts`; roll the CHANGELOG; commit; `git tag vX.Y.Z`; push the tag.
+2. `release.yml` builds the binaries + AppImage/.deb/.dmg and the GitHub Release, and
+   runs an npm-publish job **gated on an `NPM_TOKEN` secret** (currently unset, so it
+   no-ops).
+3. Manual follow-ups until that secret exists: update the Homebrew tap formula
+   (`Bradical247/homebrew-hivemux` — version, `/vX.Y.Z/` URLs, both `sha256`, the test
+   version), publish GitHub Packages (`@bradical247/hivemux`), and publish public npm.
+   The npm package's postinstall downloads the `vX.Y.Z` release binary, so publish npm
+   **after** the GitHub Release exists.
+4. `gh` is authed as ThinkPool-io and can't manage Bradical247 releases/packages; use
+   the Bradical247 PAT via `GH_TOKEN` for those API calls.
 
 ## Deliberate divergences from cmux
 
@@ -63,3 +94,9 @@ Do NOT keep the working copy under `~/Projects` (capital P). The lowercase
 `~/Projects/hivemux` to the nonexistent `~/suse-projects/hivemux`, breaking `bun run`,
 `bun test`, and `bun build`. The repo lives at `~/hivemux` to avoid this. Node was
 immune; Bun is not.
+
+Conrad's `.bashrc` aliases bare `claude` to a "use claude-thinkpool" stub. The agent
+adapter send-keys its `cmd` into an interactive shell, so a bare `claude` agent is
+shadowed and never starts. His `~/.hivemux/config.json` overrides the `claude` agent
+(and runner) to `CLAUDE_CONFIG_DIR="$HOME/.claude-thinkpool" command claude` (the
+`command` bypasses the alias, the env pins the right account). Don't drop that override.
