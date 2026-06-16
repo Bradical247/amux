@@ -97,6 +97,7 @@ export const PAGE = /* html */ `<!doctype html>
     <span id="totalcost" style="color:var(--mut);font-size:12px"></span>
     <input id="bcast" placeholder="broadcast to agent…" />
     <button id="bcastbtn">send</button>
+    <button id="loopbtn">loop</button>
     <button id="mergebtn">merge</button>
     <button id="prbtn">PR</button>
     <button id="killbtn">kill</button>
@@ -173,6 +174,7 @@ function renderList(){
       <span class="meta">
         <div class="nm">\${esc(a.name)} \${conflicted.has(a.name)?'<span class="warn">⚠</span>':''}</div>
         <div class="sub">\${esc(a.status)} · \${esc(a.branch)}\${a.note?' · '+esc(a.note):''}</div>
+        \${a.loop?\`<div class="sub" style="color:var(--ylw)">loop \${a.loop.iter}/\${a.loop.maxIters} [\${esc(a.loop.state)}]</div>\`:''}
         \${usageLine(a.name)}
       </span>
     </div>\`).join('')||'<div style="color:var(--mut);padding:14px">no agents yet — press <b>n</b></div>';
@@ -209,6 +211,15 @@ $('bcastbtn').onclick=async()=>{if(!selected)return;const t=$('bcast').value.tri
 $('mergebtn').onclick=async()=>{if(!selected)return;const r=await postJSON('/api/merge',{name:selected});const j=await r.json();j.merged?toast('merged '+selected+' → '+j.into,'ok'):toast('conflicts: '+((j.conflicts||[]).join(', ')||j.error),'err');};
 $('prbtn').onclick=async()=>{if(!selected)return;const r=await postJSON('/api/pr',{name:selected});const j=await r.json();j.url?toast('PR: '+j.url,'ok'):toast(j.error||'failed','err');};
 $('killbtn').onclick=async()=>{if(!selected)return;if(!confirm('kill '+selected+'?'))return;const n=selected;await postJSON('/api/kill',{name:n,rmWorktree:false});selected=null;$('term').style.display='none';$('empty').style.display='flex';$('cur').textContent='no agent selected';toast('killed '+n,'warn');};
+$('loopbtn').onclick=async()=>{
+  if(!selected)return;
+  const a=agents.find(x=>x.name===selected);
+  if(a&&a.loop&&a.loop.state==='running'){await postJSON('/api/loop/stop',{name:selected});toast('stopping loop '+selected,'warn');return;}
+  const goal=prompt('loop goal:');if(!goal)return;
+  const check=prompt('shell check (exit 0 = pass), blank for none:')||'';
+  await postJSON('/api/loop/start',{name:selected,goal,check:check||undefined,max:10});
+  toast('loop started on '+selected,'ok');
+};
 
 /* ---- new-agent modal ---- */
 function openModal(){arm();$('repos').innerHTML=[...new Set(agents.map(a=>a.repo))].map(r=>\`<option value="\${esc(r)}">\`).join('');$('modal').classList.add('open');$('f_name').focus();checkRepo();}

@@ -10,7 +10,7 @@
 import * as readline from "node:readline";
 import * as mgr from "../core/manager";
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 const MAX_AGENTS = 12;
 const DEFAULT_COST_CAP = 5;
 
@@ -74,6 +74,11 @@ const TOOLS = [
       },
       ["goal"],
     ),
+  },
+  {
+    name: "stop_loop",
+    description: "Cancel a running loop at its next iteration boundary.",
+    inputSchema: obj({ name: str("agent whose loop to stop") }, ["name"]),
   },
   {
     name: "get_status",
@@ -141,9 +146,11 @@ async function callTool(name: string, a: Record<string, unknown>): Promise<unkno
       }
       const name = a.name as string;
       if (!name) throw new Error("need name (or fleet)");
-      void mgr.loop(name, spec, opts).catch(() => {});
+      mgr.startLoopBg(name, spec, opts);
       return { started: [name] };
     }
+    case "stop_loop":
+      return { stopped: mgr.stopLoop(a.name as string) };
     case "get_status": {
       const rows = await mgr.usageAll();
       const filtered = a.name ? rows.filter((r) => r.name === a.name) : rows;

@@ -139,6 +139,22 @@ export async function startWeb(
         await pushSnapshot();
         return json(res, { ok: true });
       }
+      if (req.method === "POST" && path === "/api/loop/start") {
+        const b = await readBody(req);
+        mgr.startLoopBg(b.name as string, {
+          goal: b.goal as string,
+          check: b.check as string | undefined,
+          rubric: b.rubric as string | undefined,
+          maxIters: typeof b.max === "number" ? b.max : 10,
+        });
+        return json(res, { started: b.name });
+      }
+      if (req.method === "POST" && path === "/api/loop/stop") {
+        const b = await readBody(req);
+        return json(res, { stopped: mgr.stopLoop(b.name as string) });
+      }
+      if (req.method === "GET" && path === "/api/loop/running")
+        return json(res, mgr.runningLoops());
       if (req.method === "POST" && path === "/api/broadcast") {
         const b = await readBody(req);
         const names = Array.isArray(b.names) ? (b.names as string[]) : [];

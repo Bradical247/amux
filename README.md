@@ -84,6 +84,8 @@ adds the agent-specific concerns on top:
 (dashboard + SSE + auth + create form), `gui` (cmux-style desktop window),
 `daemon`, `watch`.
 
+📖 **New here? Read the [usage guide / runbook](docs/GUIDE.md)** — task-oriented recipes.
+
 ## Commands
 
 ```
@@ -98,8 +100,9 @@ hivemux report-usage [--name n] --model m --in N --out N --ctx N   # push usage 
 hivemux broadcast [names...] -m "..."   # type a prompt into agents' sessions (all if no names)
 hivemux merge <name> [--into b] [--ff]  # merge an agent's branch into the base branch
 hivemux pr <name> [-t title] [--draft]  # push branch + open a GitHub PR (needs gh)
-hivemux loop <name> --goal "..." --check "cmd" [--rubric t] [--max N] [--fleet N] [--commit] [--pr]
+hivemux loop <name> --goal "..." --check "cmd" [--rubric t] [--max N] [--fleet N] [--detach] [--commit] [--pr]
                                      # iterate→verify→fix until the check passes (loop engineering)
+hivemux loop-list / loop-stop <name> / loop-log <name>   # manage detached loops (need the daemon)
 hivemux dash                            # live full-screen TUI (status table)
 hivemux grid                            # tiled, read-only live view of all agents
 hivemux web [--port 7878] [--host 0.0.0.0] [--token t]   # web dashboard, SSE live updates

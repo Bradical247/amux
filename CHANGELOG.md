@@ -3,6 +3,20 @@
 All notable changes to hivemux are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [1.3.0]
+
+### Added
+- **Daemon-hosted loops** — `hivemux loop --detach` runs the loop inside the daemon
+  so it survives client disconnect. Loops are cancellable at the next iteration
+  boundary and write per-iteration history to `~/.hivemux/loops/<name>.jsonl`.
+  New: `loop-list`, `loop-stop <name>`, `loop-log <name>`; daemon methods
+  `loop_start` / `loop_stop` / `loop_list`.
+- **Dashboard loop control** — start/stop a loop from the web GUI and see live loop
+  state (iter/max/state) per agent. Endpoints `/api/loop/{start,stop,running}`.
+- **MCP `stop_loop`** tool; `start_loop` is now tracked + cancellable.
+- **Usage guide / runbook** (`docs/GUIDE.md`) — task-oriented recipes.
+- More tests (runner adapters + loop registry) — 23 total.
+
 ## [1.2.0]
 
 ### Added

@@ -1,6 +1,7 @@
 // The orchestration core. Every frontend — CLI, daemon/IPC, future TUI and web —
 // calls these functions. No frontend talks to tmux/git/store directly, so there
 // is exactly one source of truth and one place to evolve behavior.
+import { readFile } from "node:fs/promises";
 import { agentKeys as _agentKeys, resolveAgent } from "./agents";
 import {
   addWorktree,
@@ -17,7 +18,14 @@ import {
   repoName,
   repoRoot,
 } from "./git";
-import { type LoopResult, type LoopSpec, runLoop } from "./loop";
+import {
+  runningLoops as _runningLoops,
+  stopLoop as _stopLoop,
+  type LoopResult,
+  type LoopSpec,
+  loopHistoryFile,
+  runLoop,
+} from "./loop";
 import type { RawUsage } from "./pricing";
 import * as store from "./store";
 import { buildGrid, killSession, newSession, sendKeys, sessionExists } from "./tmux";
@@ -285,4 +293,32 @@ export async function fleetLoop(
       result: await loop(name, spec, opts, (m) => onLog(`[${name}] ${m}`)),
     })),
   );
+}
+
+/** Start a loop in the background (fire-and-poll). Returns immediately. */
+export function startLoopBg(name: string, spec: LoopSpec, opts: LoopOpts = {}): void {
+  void loop(name, spec, opts).catch(() => {});
+}
+
+/** Cancel a running loop at its next iteration boundary. */
+export function stopLoop(name: string): boolean {
+  return _stopLoop(name);
+}
+
+/** Names of loops currently running in this process. */
+export function runningLoops(): string[] {
+  return _runningLoops();
+}
+
+/** Read a loop's per-iteration history (newest events last). */
+export async function loopHistory(name: string): Promise<Array<Record<string, unknown>>> {
+  try {
+    const text = await readFile(loopHistoryFile(name), "utf8");
+    return text
+      .split("\n")
+      .filter(Boolean)
+      .map((l) => JSON.parse(l) as Record<string, unknown>);
+  } catch {
+    return [];
+  }
 }

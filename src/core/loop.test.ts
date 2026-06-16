@@ -6,7 +6,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { decide, verifyShell } from "./loop";
+import { decide, runningLoops, stopLoop, verifyShell } from "./loop";
 
 describe("loop.decide", () => {
   const pass = { pass: true, feedback: "" };
@@ -27,6 +27,15 @@ describe("loop.decide", () => {
     const a = decide(10, 10, fail, false);
     expect(a.type).toBe("stop");
     if (a.type === "stop") expect(a.reason).toContain("max iterations");
+  });
+});
+
+describe("loop registry", () => {
+  test("stopLoop on an unknown loop returns false", () => {
+    expect(stopLoop("no-such-loop")).toBe(false);
+  });
+  test("runningLoops is an array (empty at rest)", () => {
+    expect(Array.isArray(runningLoops())).toBe(true);
   });
 });
 

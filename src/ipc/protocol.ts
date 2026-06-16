@@ -17,6 +17,9 @@ export type Method =
   | "notify"
   | "conflicts"
   | "agents"
+  | "loop_start"
+  | "loop_stop"
+  | "loop_list"
   | "ping"
   | "subscribe";
 

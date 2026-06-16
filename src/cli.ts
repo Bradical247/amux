@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name("hivemux")
   .description("tmux-backed orchestrator for parallel AI coding agents")
-  .version("1.2.0");
+  .version("1.3.0");
 
 function fail(msg: string): never {
   console.error(`hivemux: ${msg}`);
@@ -209,6 +209,7 @@ program
   .option("--commit", "git commit on pass")
   .option("--pr", "open a GitHub PR on pass (needs gh)")
   .option("--fleet <n>", "run the same goal on N agents (name = base)")
+  .option("--detach", "run via the daemon so it survives disconnect")
   .option("-a, --agent <key>", "agent adapter for --fleet", "claude")
   .option("-r, --repo <path>", "repo for --fleet (default: cwd)")
   .action((name: string, opts) =>
@@ -226,6 +227,15 @@ program
         pr: Boolean(opts.pr),
       };
       const log = (m: string) => console.log(m);
+      if (opts.detach) {
+        const client = await DaemonClient.tryConnect();
+        if (!client) fail("--detach needs the daemon running: start it with `hivemux daemon`");
+        await client.call("loop_start", { name, spec, opts: lopts });
+        console.log(
+          `✓ loop '${name}' started in the daemon — hivemux loop-list / loop-log ${name}`,
+        );
+        return;
+      }
       if (opts.fleet) {
         const res = await mgr.fleetLoop(
           name,
@@ -250,6 +260,44 @@ program
           : `✗ '${name}' stopped: ${r.reason} (${r.iters} iters)`,
       );
       if (!r.passed) process.exit(1);
+    }),
+  );
+
+program
+  .command("loop-stop <name>")
+  .description("cancel a running loop (next iteration boundary)")
+  .action((name: string) =>
+    guard(async () => {
+      const client = await DaemonClient.tryConnect();
+      const stopped = client
+        ? ((await client.call("loop_stop", { name })) as { stopped: boolean }).stopped
+        : mgr.stopLoop(name);
+      console.log(stopped ? `✓ stopping '${name}'` : `no running loop '${name}'`);
+    }),
+  );
+
+program
+  .command("loop-list")
+  .description("list running loops")
+  .action(() =>
+    guard(async () => {
+      const client = await DaemonClient.tryConnect();
+      const names = client ? ((await client.call("loop_list")) as string[]) : mgr.runningLoops();
+      console.log(names.length ? names.join("\n") : "no running loops");
+    }),
+  );
+
+program
+  .command("loop-log <name>")
+  .description("show a loop's per-iteration history")
+  .action((name: string) =>
+    guard(async () => {
+      const recs = await mgr.loopHistory(name);
+      if (recs.length === 0) {
+        console.log("no history");
+        return;
+      }
+      for (const r of recs) console.log(JSON.stringify(r));
     }),
   );
 

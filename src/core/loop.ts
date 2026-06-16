@@ -6,11 +6,41 @@
 // Context carries across iterations via `--resume <session_id>`. The verifier is
 // a shell check (exit 0 = pass) or an LLM judge against a rubric.
 import { execFile } from "node:child_process";
+import { appendFile, mkdir } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { promisify } from "node:util";
 import { parseTurn, resolveRunner, type TurnOut, turnArgs } from "./runners";
 import * as store from "./store";
 
 const pexec = promisify(execFile);
+
+// Registry of in-flight loops in THIS process (for stop/list). A loop checks its
+// token between iterations, so `stopLoop` cancels cleanly at the next boundary.
+const RUNNING = new Map<string, { cancel: boolean }>();
+
+export function stopLoop(name: string): boolean {
+  const t = RUNNING.get(name);
+  if (!t) return false;
+  t.cancel = true;
+  return true;
+}
+export function runningLoops(): string[] {
+  return [...RUNNING.keys()];
+}
+
+export function loopHistoryFile(name: string): string {
+  return path.join(os.homedir(), ".hivemux", "loops", `${name}.jsonl`);
+}
+async function appendHistory(name: string, record: Record<string, unknown>): Promise<void> {
+  try {
+    const f = loopHistoryFile(name);
+    await mkdir(path.dirname(f), { recursive: true });
+    await appendFile(f, `${JSON.stringify({ ts: new Date().toISOString(), ...record })}\n`);
+  } catch {
+    /* history is best-effort */
+  }
+}
 
 export interface LoopSpec {
   goal: string;
@@ -124,12 +154,20 @@ export async function runLoop(
   const a0 = await store.get(name);
   if (!a0) throw new Error(`unknown agent '${name}'`);
   const runner = spec.runner ?? "claude";
+  const token = { cancel: false };
+  RUNNING.set(name, token);
+  await appendHistory(name, { event: "start", goal: spec.goal, maxIters: spec.maxIters });
   let prompt = spec.goal;
   let resumeId: string | undefined;
   let totalCost = 0;
   let inTok = 0;
   let outTok = 0;
   let model = "";
+  const finish = async (r: LoopResult): Promise<LoopResult> => {
+    RUNNING.delete(name);
+    await appendHistory(name, { event: "end", ...r });
+    return r;
+  };
 
   const persist = (iter: number, state: "running" | "passed" | "stopped") =>
     store.update(name, {
@@ -146,6 +184,11 @@ export async function runLoop(
     });
 
   for (let iter = 1; iter <= spec.maxIters; iter++) {
+    if (token.cancel) {
+      await persist(iter, "stopped");
+      await store.update(name, { status: "error" });
+      return finish({ passed: false, iters: iter - 1, costUSD: totalCost, reason: "cancelled" });
+    }
     await persist(iter, "running");
     onLog(`iter ${iter}/${spec.maxIters}: running agent…`);
 
@@ -154,12 +197,12 @@ export async function runLoop(
       turn = await agentTurn(runner, a0.worktree, prompt, resumeId);
     } catch (e) {
       await persist(iter, "stopped");
-      return {
+      return finish({
         passed: false,
         iters: iter,
         costUSD: totalCost,
         reason: `agent failed: ${(e as Error).message}`,
-      };
+      });
     }
     resumeId = turn.sessionId;
     totalCost += turn.costUSD;
@@ -174,25 +217,26 @@ export async function runLoop(
       ? await verifyShell(a0.worktree, spec.check)
       : await verifyRubric(runner, a0.worktree, spec.goal, spec.rubric ?? "");
     onLog(`iter ${iter}: ${verdict.pass ? "PASS" : "fail"}`);
+    await appendHistory(name, { iter, pass: verdict.pass, costUSD: totalCost });
 
     const overCap = a0.costCap != null && totalCost >= a0.costCap;
     const act = decide(iter, spec.maxIters, verdict, overCap);
     if (act.type === "pass") {
       await persist(iter, "passed");
       await store.update(name, { status: "done" });
-      return { passed: true, iters: iter, costUSD: totalCost };
+      return finish({ passed: true, iters: iter, costUSD: totalCost });
     }
     if (act.type === "stop") {
       await persist(iter, "stopped");
       await store.update(name, { status: "error" });
-      return { passed: false, iters: iter, costUSD: totalCost, reason: act.reason };
+      return finish({ passed: false, iters: iter, costUSD: totalCost, reason: act.reason });
     }
     prompt = act.prompt;
   }
-  return {
+  return finish({
     passed: false,
     iters: spec.maxIters,
     costUSD: totalCost,
     reason: "max iterations reached",
-  };
+  });
 }

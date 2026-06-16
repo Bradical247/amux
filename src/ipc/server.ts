@@ -31,6 +31,19 @@ async function handle(req: Request): Promise<unknown> {
       return mgr.conflicts();
     case "agents":
       return mgr.agentKeys();
+    case "loop_start": {
+      // Loop runs in the daemon process → survives client disconnect.
+      mgr.startLoopBg(
+        p.name as string,
+        p.spec as Parameters<typeof mgr.startLoopBg>[1],
+        (p.opts as Parameters<typeof mgr.startLoopBg>[2]) ?? {},
+      );
+      return { started: p.name };
+    }
+    case "loop_stop":
+      return { stopped: mgr.stopLoop(p.name as string) };
+    case "loop_list":
+      return mgr.runningLoops();
     default:
       throw new Error(`unknown method '${req.method}'`);
   }
