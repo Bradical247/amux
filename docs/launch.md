@@ -50,6 +50,41 @@ That's why it's headless-and-remote-first instead of a desktop app.
 Happy to answer anything about the architecture or the cost-tracking approach
 (it parses each agent CLI's own transcript, or accepts pushed usage from a hook).
 
-## Other channels
-- r/commandline, r/Anthropic, r/ClaudeAI
-- X/Twitter with the demo GIF (assets/demo.gif) and the social card (assets/social.png)
+## HN status
+Show HN is gated for new accounts (anti-spam). Plan: comment thoughtfully for
+1–2 weeks to build a little karma, then Show HN is allowed. Park it; use the
+channels below now (no reputation gate).
+
+## Channel 1 — awesome lists (evergreen, no gate, highest leverage)
+Open a PR adding amux to lists people already search. Best targets:
+- `andyrewlee/awesome-agent-orchestrators` (lists cmux et al — direct fit)
+- `rothgar/awesome-tmux`
+- `hesreallyhim/awesome-claude-code` (or similar)
+Entry line:
+> **[amux](https://github.com/Bradical247/amux)** — Linux-native, tmux-backed
+> orchestrator for parallel AI coding agents: isolated git worktrees, conflict
+> detection, merge/PR, usage/cost tracking; CLI + TUI + web + desktop GUI.
+
+## Channel 2 — X / Twitter (post the demo GIF)
+> Built amux: run parallel AI coding agents (Claude Code, Codex, Gemini, Aider)
+> on Linux — each in its own git worktree + tmux session.
+>
+> Like cmux, but tmux-backed: headless over SSH, survives disconnects, GUI *and*
+> the server room. Conflict detection, merge/PR, token/cost tracking.
+>
+> MIT, single binary + AppImage. https://github.com/Bradical247/amux
+Attach `assets/demo.gif`. Reply with `assets/gui.png` (the desktop window).
+
+## Channel 3 — Reddit (frame as "I built", read each sub's self-promo rule first)
+- **r/commandline** — lead with the CLI + tmux angle + the demo GIF.
+- **r/selfhosted** — lead with headless/remote/SSH + web dashboard.
+- **r/ClaudeAI** / **r/LocalLLaMA** — lead with parallel agents + cost tracking.
+
+Reddit body:
+> I kept wanting to run several coding agents at once without them clobbering each
+> other, so I built amux: each agent gets its own git worktree + tmux session, and
+> you manage them from a CLI, a live TUI, a web dashboard, or a desktop app. Because
+> it's tmux-backed it runs headless over SSH and survives disconnects. It also flags
+> file conflicts before you merge and tracks per-agent token cost. MIT, single binary
+> + AppImage. Repo: https://github.com/Bradical247/amux — feedback welcome.
+
