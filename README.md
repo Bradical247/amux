@@ -66,6 +66,10 @@ across disconnects, and lives on a remote box you attach to from anywhere.
   `hivemux notify` (wire it into agent hooks); a daemon pushes live events to every client.
 - **Authenticated when exposed**: the web dashboard auto-mints a token the moment it
   binds beyond loopback.
+- **Sandboxed agents and governance**: looped agents run under an OS sandbox (bwrap on
+  Linux, seatbelt on macOS) confined to their worktree, so a headless `acceptEdits` agent
+  can't write outside it. A `policy` block governs sandbox, network, a hard cost ceiling,
+  and `requireApproval` (hold commit/PR for `hivemux approve`). `hivemux doctor` checks it all.
 - **Single-binary distribution**: `bun build --compile` produces one self-contained
   executable; the target machine needs nothing installed.
 
@@ -106,7 +110,7 @@ hivemux report-usage [--name n] --model m --in N --out N --ctx N   # push usage 
 hivemux broadcast [names...] -m "..."   # type a prompt into agents' sessions (all if no names)
 hivemux merge <name> [--into b] [--ff]  # merge an agent's branch into the base branch
 hivemux pr <name> [-t title] [--draft]  # push branch + open a GitHub PR (needs gh)
-hivemux loop <name> --goal "..." --check "cmd" [--rubric t] [--max N] [--fleet N] [--detach] [--commit] [--pr] [--ponytail]
+hivemux loop <name> --goal "..." --check "cmd" [--rubric t] [--max N] [--fleet N] [--detach] [--commit] [--pr] [--ponytail] [--sandbox auto|on|off]
                                      # iterate→verify→fix until the check passes (loop engineering)
 hivemux loop-list / loop-stop <name> / loop-log <name>   # manage detached loops (need the daemon)
 hivemux dash                            # live full-screen TUI (status table)
@@ -117,6 +121,9 @@ hivemux daemon                          # control-plane daemon (event push, remo
 hivemux watch                           # stream live status from the daemon
 hivemux mcp                             # run as an MCP server (stdio); a conductor agent drives the fleet
 hivemux agents
+hivemux approve [name]                  # perform a commit/PR held by requireApproval (no name = list)
+hivemux deny <name>                     # discard a held commit/PR
+hivemux doctor                          # check deps (tmux, ttyd, browser, gh) + sandbox availability
 ```
 
 ### Drive hivemux from a conductor agent (MCP)
@@ -204,6 +211,12 @@ hivemux notify --status waiting --note "needs review"
   "integrations": {
     "slackWebhook": "https://hooks.slack.com/services/…",
     "webhook": "https://example.com/hivemux"
+  },
+  "policy": {
+    "sandbox": "auto",
+    "network": true,
+    "maxCostUSD": 5,
+    "requireApproval": false
   }
 }
 ```
@@ -211,6 +224,11 @@ hivemux notify --status waiting --note "needs review"
 `pricing` rates are USD per 1M tokens (`cacheRead`/`cacheWrite` optional, default to
 0.1× / 1.25× of `in`); built-in Anthropic models are grounded and need no entry; add
 entries for any other LLM you run. `integrations` receive cap-crossing alerts.
+
+`policy` governs what looped agents may do: `sandbox` (`auto` / `on` / `off`) runs the
+agent under an OS sandbox (bwrap on Linux, seatbelt on macOS) confined to its worktree;
+`network` toggles network inside it; `maxCostUSD` is a hard cost ceiling; `requireApproval`
+holds any commit/PR for `hivemux approve`. Run `hivemux doctor` to see what's installed.
 
 State lives in `~/.hivemux/state.json`; worktrees in `~/.hivemux/worktrees/<repo>/<name>`.
 

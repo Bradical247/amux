@@ -1,7 +1,9 @@
 // The orchestration core. Every frontend — CLI, daemon/IPC, future TUI and web —
 // calls these functions. No frontend talks to tmux/git/store directly, so there
 // is exactly one source of truth and one place to evolve behavior.
-import { readFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { agentKeys as _agentKeys, resolveAgent } from "./agents";
 import {
   addWorktree,
@@ -26,6 +28,7 @@ import {
   loopHistoryFile,
   runLoop,
 } from "./loop";
+import { loadPolicy } from "./policy";
 import type { RawUsage } from "./pricing";
 import * as store from "./store";
 import { buildGrid, killSession, newSession, sendKeys, sessionExists } from "./tmux";
@@ -266,11 +269,65 @@ export async function loop(
   const a = await store.get(name);
   if (!a) throw new AmuxError(`unknown agent '${name}'`);
   const result = await runLoop(name, spec, onLog);
-  if (result.passed) {
+  if (result.passed && (opts.commit || opts.pr)) {
+    // Governance: under requireApproval, hold the risky git action for a human.
+    if (loadPolicy().requireApproval) {
+      await savePending(name, { goal: spec.goal, commit: !!opts.commit, pr: !!opts.pr });
+      onLog(`held for approval — run 'hivemux approve ${name}' (or 'deny')`);
+      return { ...result, reason: "awaiting-approval" };
+    }
     if (opts.commit) await commitAll(a.worktree, `hivemux: ${spec.goal}`);
     if (opts.pr) await openPr(name, { title: spec.goal }).catch(() => {});
   }
   return result;
+}
+
+interface Pending {
+  goal: string;
+  commit: boolean;
+  pr: boolean;
+}
+function pendingFile(name: string): string {
+  return path.join(os.homedir(), ".hivemux", "pending", `${encodeURIComponent(name)}.json`);
+}
+async function savePending(name: string, p: Pending): Promise<void> {
+  const f = pendingFile(name);
+  await mkdir(path.dirname(f), { recursive: true });
+  await writeFile(f, JSON.stringify(p));
+}
+
+/** Agents with a commit/PR held for approval. */
+export async function listPending(): Promise<string[]> {
+  try {
+    const dir = path.join(os.homedir(), ".hivemux", "pending");
+    return (await readdir(dir))
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => decodeURIComponent(f.slice(0, -5)));
+  } catch {
+    return [];
+  }
+}
+
+/** Approve a held action: perform the commit/PR and clear the hold. */
+export async function approve(name: string): Promise<{ committed: boolean; pr?: string }> {
+  const a = await store.get(name);
+  if (!a) throw new AmuxError(`unknown agent '${name}'`);
+  let p: Pending;
+  try {
+    p = JSON.parse(await readFile(pendingFile(name), "utf8"));
+  } catch {
+    throw new AmuxError(`no pending action for '${name}'`);
+  }
+  let pr: string | undefined;
+  if (p.commit) await commitAll(a.worktree, `hivemux: ${p.goal}`);
+  if (p.pr) pr = await openPr(name, { title: p.goal }).catch(() => undefined);
+  await rm(pendingFile(name), { force: true });
+  return { committed: !!p.commit, pr };
+}
+
+/** Discard a held action without performing it. */
+export async function denyApproval(name: string): Promise<void> {
+  await rm(pendingFile(name), { force: true });
 }
 
 /** Spawn N agents (<base>-1..N) on the same repo and loop the same goal on each. */

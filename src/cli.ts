@@ -3,8 +3,14 @@
 // in-process (no daemon needed); `daemon` starts the control plane and `watch`
 // streams live events from it.
 import { spawn, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { Command } from "commander";
+import { agentKeys } from "./core/agents";
 import * as mgr from "./core/manager";
+import { loadPolicy } from "./core/policy";
+import { resolveRunner } from "./core/runners";
+import { sandboxKind } from "./core/sandbox";
 import { attach } from "./core/tmux";
 import type { AgentView, Status } from "./core/types";
 import { DaemonClient } from "./ipc/client";
@@ -231,6 +237,7 @@ program
   .option("--fleet <n>", "run the same goal on N agents (name = base)")
   .option("--detach", "run via the daemon so it survives disconnect")
   .option("--ponytail", "lazy-senior-dev mode: bias the agent toward the smallest solution")
+  .option("--sandbox <mode>", "OS sandbox for the agent: auto | on | off (default: policy)")
   .option("-a, --agent <key>", "agent adapter for --fleet", "claude")
   .option("-r, --repo <path>", "repo for --fleet (default: cwd)")
   .action((name: string, opts) =>
@@ -242,6 +249,7 @@ program
         maxIters: Number(opts.max),
         runner: opts.runner,
         ponytail: Boolean(opts.ponytail),
+        sandbox: ["auto", "on", "off"].includes(opts.sandbox) ? opts.sandbox : undefined,
       };
       if (!spec.check && !spec.rubric) fail("need --check <cmd> or --rubric <text>");
       const lopts = {
@@ -320,6 +328,42 @@ program
         return;
       }
       for (const r of recs) console.log(JSON.stringify(r));
+    }),
+  );
+
+program
+  .command("approve [name]")
+  .description("approve a commit/PR held by the requireApproval policy (no name = list)")
+  .action((name?: string) =>
+    guard(async () => {
+      if (!name) {
+        const p = await mgr.listPending();
+        console.log(p.length ? `pending approval: ${p.join(", ")}` : "nothing pending");
+        return;
+      }
+      const r = await mgr.approve(name);
+      console.log(
+        `✓ approved '${name}'${r.committed ? " (committed)" : ""}${r.pr ? ` PR: ${r.pr}` : ""}`,
+      );
+    }),
+  );
+
+program
+  .command("deny <name>")
+  .description("discard a commit/PR held for approval")
+  .action((name: string) =>
+    guard(async () => {
+      await mgr.denyApproval(name);
+      console.log(`✓ denied '${name}'`);
+    }),
+  );
+
+program
+  .command("doctor")
+  .description("check hivemux's runtime dependencies + sandbox availability")
+  .action(() =>
+    guard(async () => {
+      await runDoctor();
     }),
   );
 
@@ -490,6 +534,49 @@ program
       console.log("watching… (Ctrl-C to stop)");
     }),
   );
+
+function onPath(bin: string): boolean {
+  return (process.env.PATH ?? "").split(":").some((d) => d && existsSync(path.join(d, bin)));
+}
+
+async function runDoctor(): Promise<void> {
+  const mark = (ok: boolean) => (ok ? "✓" : "✗");
+  const line = (ok: boolean, label: string, note = "") =>
+    console.log(`  ${mark(ok)} ${label}${note ? `  ${note}` : ""}`);
+
+  console.log("required");
+  line(onPath("tmux"), "tmux", "agent sessions");
+  line(onPath("git"), "git", "worktrees");
+
+  console.log("desktop GUI (hivemux gui / web terminals)");
+  line(onPath("ttyd"), "ttyd", "embedded terminals");
+  const browser = ["google-chrome", "chromium", "chromium-browser", "brave-browser"].find(onPath);
+  line(Boolean(browser), "chromium-family browser", browser ?? "for --app window");
+
+  console.log("optional");
+  line(onPath("gh"), "gh", "hivemux pr");
+  line(onPath("node"), "node", "some agent CLIs");
+
+  console.log("sandbox (loop confinement)");
+  const kind = sandboxKind();
+  line(
+    kind !== "none",
+    `sandbox: ${kind}`,
+    kind === "none" ? "install bwrap (Linux) for --sandbox" : "",
+  );
+  const pol = loadPolicy();
+  console.log(
+    `  policy: sandbox=${pol.sandbox} network=${pol.network} requireApproval=${pol.requireApproval}${pol.maxCostUSD != null ? ` maxCostUSD=${pol.maxCostUSD}` : ""}`,
+  );
+
+  console.log("runners");
+  for (const key of await agentKeys()) {
+    if (key === "shell") continue; // an interactive shell, not a headless runner
+    const bin = resolveRunner(key).bin;
+    if (!bin) continue;
+    line(onPath(bin), key, bin);
+  }
+}
 
 function printTable(agents: AgentView[]): void {
   const cols: Array<[string, (a: AgentView) => string]> = [

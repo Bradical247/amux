@@ -10,8 +10,10 @@ import { appendFile, mkdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { loadPolicy } from "./policy";
 import { applyPonytail } from "./ponytail";
 import { parseTurn, resolveRunner, type TurnOut, turnArgs } from "./runners";
+import { type SandboxMode, wrap } from "./sandbox";
 import * as store from "./store";
 
 const pexec = promisify(execFile);
@@ -52,6 +54,10 @@ export interface LoopSpec {
   runner?: string;
   /** prepend the Ponytail "lazy senior dev" directive to the agent's prompt */
   ponytail?: boolean;
+  /** OS sandbox override (else the policy default); "auto" | "on" | "off" */
+  sandbox?: SandboxMode;
+  /** allow network inside the sandbox (else the policy default) */
+  network?: boolean;
 }
 
 export interface Verdict {
@@ -86,13 +92,23 @@ async function agentTurn(
   worktree: string,
   prompt: string,
   resumeId?: string,
+  sandbox?: { mode: SandboxMode; network: boolean; extraBinds: string[] },
 ): Promise<TurnOut> {
   const adapter = resolveRunner(runner);
   const args = turnArgs(adapter, prompt, resumeId);
+  // Confine the agent to its worktree (OS sandbox) when enabled/available.
+  const w = sandbox
+    ? wrap(adapter.bin, args, {
+        worktree,
+        network: sandbox.network,
+        mode: sandbox.mode,
+        extraBinds: sandbox.extraBinds,
+      })
+    : { bin: adapter.bin, args };
   // A depleted ANTHROPIC_API_KEY can shadow a working login — drop it for the turn.
   const env = { ...process.env };
   delete env.ANTHROPIC_API_KEY;
-  const { stdout } = await pexec(adapter.bin, args, {
+  const { stdout } = await pexec(w.bin, w.args, {
     cwd: worktree,
     env,
     timeout: 300_000,
@@ -157,6 +173,16 @@ export async function runLoop(
   const a0 = await store.get(name);
   if (!a0) throw new Error(`unknown agent '${name}'`);
   const runner = spec.runner ?? "claude";
+  const policy = loadPolicy();
+  const sandbox = {
+    mode: spec.sandbox ?? policy.sandbox,
+    network: spec.network ?? policy.network,
+    extraBinds: [path.join(a0.repo, ".git")], // git worktree metadata lives here
+  };
+  // Effective cost ceiling: tighter of the agent's cap and the policy ceiling.
+  const costCap = [a0.costCap, policy.maxCostUSD]
+    .filter((n): n is number => n != null)
+    .sort((x, y) => x - y)[0];
   const token = { cancel: false };
   RUNNING.set(name, token);
   await appendHistory(name, { event: "start", goal: spec.goal, maxIters: spec.maxIters });
@@ -198,7 +224,7 @@ export async function runLoop(
 
     let turn: TurnOut;
     try {
-      turn = await agentTurn(runner, a0.worktree, prompt, resumeId);
+      turn = await agentTurn(runner, a0.worktree, prompt, resumeId, sandbox);
     } catch (e) {
       await persist(iter, "stopped");
       return finish({
@@ -223,7 +249,7 @@ export async function runLoop(
     onLog(`iter ${iter}: ${verdict.pass ? "PASS" : "fail"}`);
     await appendHistory(name, { iter, pass: verdict.pass, costUSD: totalCost });
 
-    const overCap = a0.costCap != null && totalCost >= a0.costCap;
+    const overCap = costCap != null && totalCost >= costCap;
     const act = decide(iter, spec.maxIters, verdict, overCap);
     if (act.type === "pass") {
       await persist(iter, "passed");

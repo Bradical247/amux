@@ -22,6 +22,16 @@ All notable changes to hivemux are documented here. Format loosely follows
   prepends the [Ponytail](https://github.com/DietrichGebert/ponytail) lazy-senior-dev
   directive (MIT, Dietrich Gebert) to the agent's opening prompt, biasing it toward
   the smallest solution that works.
+- **Sandboxed agents** (inspired by omnigent): looped agents run under an OS sandbox
+  (bwrap on Linux, seatbelt on macOS) confined to their worktree plus the repo's `.git`,
+  so a headless `acceptEdits` agent can't write outside it. Network stays on by default
+  (the model API needs it). `loop --sandbox auto|on|off`; config `policy.sandbox` /
+  `policy.network`.
+- **Governance policy** (`~/.hivemux/config.json` → `policy`): `maxCostUSD` hard cost
+  ceiling per loop, and `requireApproval` holds a passing loop's commit/PR for
+  `hivemux approve <name>` / `hivemux deny <name>`.
+- **`hivemux doctor`**: checks runtime deps (tmux, ttyd, browser, gh, node), sandbox
+  availability, the active policy, and configured runners.
 
 ### Changed
 - Brand refreshed to a honeycomb mark; documentation de-emojified and tightened.
