@@ -166,6 +166,7 @@ export async function startWeb(
           rubric: b.rubric as string | undefined,
           maxIters: typeof b.max === "number" ? b.max : 10,
           runner: (b.runner as string | undefined) || undefined,
+          ponytail: Boolean(b.ponytail),
         };
         const opts = { commit: Boolean(b.commit), pr: Boolean(b.pr) };
         if (typeof b.fleet === "number" && b.fleet > 0) {

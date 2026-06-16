@@ -10,6 +10,7 @@ import { appendFile, mkdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { applyPonytail } from "./ponytail";
 import { parseTurn, resolveRunner, type TurnOut, turnArgs } from "./runners";
 import * as store from "./store";
 
@@ -49,6 +50,8 @@ export interface LoopSpec {
   maxIters: number;
   /** headless agent runner; "claude" by default */
   runner?: string;
+  /** prepend the Ponytail "lazy senior dev" directive to the agent's prompt */
+  ponytail?: boolean;
 }
 
 export interface Verdict {
@@ -157,7 +160,8 @@ export async function runLoop(
   const token = { cancel: false };
   RUNNING.set(name, token);
   await appendHistory(name, { event: "start", goal: spec.goal, maxIters: spec.maxIters });
-  let prompt = spec.goal;
+  // Ponytail rides in once on the opening prompt; --resume carries it forward.
+  let prompt = applyPonytail(spec.goal, spec.ponytail);
   let resumeId: string | undefined;
   let totalCost = 0;
   let inTok = 0;

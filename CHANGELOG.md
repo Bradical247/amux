@@ -18,6 +18,10 @@ All notable changes to hivemux are documented here. Format loosely follows
   - **Prune** button (`/api/prune`).
 - New web endpoints: `/api/loop/log`, `/api/prune`, `/api/mcp`; `/api/loop/start`
   now accepts `rubric`, `runner`, `fleet`, `commit`, and `pr`.
+- **`--ponytail`**: a loop option (CLI, GUI checkbox, MCP `start_loop` param) that
+  prepends the [Ponytail](https://github.com/DietrichGebert/ponytail) lazy-senior-dev
+  directive (MIT, Dietrich Gebert) to the agent's opening prompt, biasing it toward
+  the smallest solution that works.
 
 ### Changed
 - Brand refreshed to a honeycomb mark; documentation de-emojified and tightened.

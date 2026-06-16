@@ -39,7 +39,9 @@ across disconnects, and lives on a remote box you attach to from anywhere.
   per-iteration cost. The verifier is a shell check or an LLM judge (`--rubric`).
   Pluggable runner (`--runner`): `claude` is built in, codex / gemini /
   OpenRouter-backed CLIs drop in via config. `--fleet N` runs the same goal on N
-  agents at once; `--commit` / `--pr` land it on pass.
+  agents at once; `--commit` / `--pr` land it on pass. `--ponytail` flips the agent
+  into lazy-senior-dev mode (smallest solution that works), via
+  [Ponytail](https://github.com/DietrichGebert/ponytail).
 - **Desktop GUI**: `hivemux gui` opens a cmux-style app window: a sidebar of agent
   workspaces (status + notification rings) and an embedded live terminal per agent
   (via [ttyd](https://github.com/tsl0922/ttyd)). The toolbar drives the full feature
@@ -104,7 +106,7 @@ hivemux report-usage [--name n] --model m --in N --out N --ctx N   # push usage 
 hivemux broadcast [names...] -m "..."   # type a prompt into agents' sessions (all if no names)
 hivemux merge <name> [--into b] [--ff]  # merge an agent's branch into the base branch
 hivemux pr <name> [-t title] [--draft]  # push branch + open a GitHub PR (needs gh)
-hivemux loop <name> --goal "..." --check "cmd" [--rubric t] [--max N] [--fleet N] [--detach] [--commit] [--pr]
+hivemux loop <name> --goal "..." --check "cmd" [--rubric t] [--max N] [--fleet N] [--detach] [--commit] [--pr] [--ponytail]
                                      # iterate→verify→fix until the check passes (loop engineering)
 hivemux loop-list / loop-stop <name> / loop-log <name>   # manage detached loops (need the daemon)
 hivemux dash                            # live full-screen TUI (status table)
@@ -251,6 +253,12 @@ src/
 The store is the single source of truth (concurrency-safe), so CLI / daemon / web
 never diverge. The daemon and web server each run a `Watcher` and push deltas to
 their clients, with no per-client tmux polling.
+
+## Credits
+
+- [cmux](https://github.com/manaflow-ai/cmux) for the parallel-agent workflow that inspired this.
+- [Ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT) for the lazy-senior-dev directive behind `--ponytail`.
+- [tmux](https://github.com/tmux/tmux) and [ttyd](https://github.com/tsl0922/ttyd), which do the heavy lifting.
 
 ## License
 

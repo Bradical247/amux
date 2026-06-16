@@ -230,6 +230,7 @@ program
   .option("--pr", "open a GitHub PR on pass (needs gh)")
   .option("--fleet <n>", "run the same goal on N agents (name = base)")
   .option("--detach", "run via the daemon so it survives disconnect")
+  .option("--ponytail", "lazy-senior-dev mode: bias the agent toward the smallest solution")
   .option("-a, --agent <key>", "agent adapter for --fleet", "claude")
   .option("-r, --repo <path>", "repo for --fleet (default: cwd)")
   .action((name: string, opts) =>
@@ -240,6 +241,7 @@ program
         rubric: opts.rubric,
         maxIters: Number(opts.max),
         runner: opts.runner,
+        ponytail: Boolean(opts.ponytail),
       };
       if (!spec.check && !spec.rubric) fail("need --check <cmd> or --rubric <text>");
       const lopts = {

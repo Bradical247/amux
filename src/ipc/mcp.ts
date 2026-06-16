@@ -71,6 +71,7 @@ export const TOOLS = [
         repo: str("repo for fleet agents"),
         commit: bool("git commit on pass"),
         pr: bool("open a PR on pass"),
+        ponytail: bool("lazy-senior-dev mode: bias toward the smallest solution"),
       },
       ["goal"],
     ),
@@ -133,6 +134,7 @@ async function callTool(name: string, a: Record<string, unknown>): Promise<unkno
         check: a.check as string | undefined,
         rubric: a.rubric as string | undefined,
         maxIters: typeof a.max === "number" ? a.max : 10,
+        ponytail: Boolean(a.ponytail),
       };
       if (!spec.check && !spec.rubric) throw new Error("need check or rubric");
       const opts = { commit: Boolean(a.commit), pr: Boolean(a.pr) };
