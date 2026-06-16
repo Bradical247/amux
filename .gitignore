@@ -6,3 +6,4 @@ playwright-report/
 test-results/
 e2e/.state.json
 hivemux.repomix.txt
+*.tgz

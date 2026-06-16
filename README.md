@@ -87,7 +87,13 @@ TODOs, loop each until `bun test` passes, $3 cap each, merge the passes."* Tools
 
 ## Install
 
-Grab the latest from [Releases](https://github.com/Bradical247/hivemux/releases/latest):
+```bash
+npm install -g hivemux          # or: npx hivemux
+brew install bradical247/hivemux/hivemux
+```
+
+Both grab the prebuilt binary for your platform (linux-x64 / macos-arm64). Or grab a
+desktop app / raw binary from [Releases](https://github.com/Bradical247/hivemux/releases/latest):
 
 | Platform | Artifact |
 |---|---|

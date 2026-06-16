@@ -5,6 +5,13 @@ All notable changes to hivemux are documented here. Format loosely follows
 
 ## [1.5.0] — 2026-06-16
 
+### Packaging
+- **Homebrew tap**: `brew install bradical247/hivemux/hivemux`
+  ([Bradical247/homebrew-hivemux](https://github.com/Bradical247/homebrew-hivemux)).
+- **GitHub Packages**: `@bradical247/hivemux` on npm.pkg.github.com.
+- **npm package** (`publish/npm/`): a thin launcher whose postinstall fetches the
+  prebuilt binary for the platform from the matching GitHub release.
+
 ### Added
 - **GUI runbook is now a visual manual** (`docs/GUI.md`): two annotated screenshots
   (main window + loop modal) with numbered callouts keyed to the reference tables,
